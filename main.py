@@ -3,13 +3,11 @@ from dotenv import load_dotenv
 import pandas as pd
 import discord
 from discord.ext import commands, tasks
-from update_data import update_prebids_data, update_bids_data
-from discord.ext import tasks
 
-# 환경 변수에서 API 키를 로드
+# Load environment variables
 load_dotenv()
 
-# Discord 설정
+# Discord settings
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
 CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
 
@@ -41,15 +39,14 @@ async def prebid(ctx, *, query: str):
         url = f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={prebid_number}"
         await ctx.send(url)
     else:
-        num, keywords = query.split(' ', 1)
+        num, keyword = query.split(' ', 1)
         num = int(num)
-        keyword_list = keywords.split(',')
         df = pd.read_csv("filtered_prebids_data.csv")
-        filtered_df = df[df['prdctClsfcNoNm'].str.contains('|'.join(keyword_list), na=False)]
-        filtered_df = filtered_df.head(num)
+        filtered_df = df[df['prdctClsfcNoNm'].str.contains(keyword, na=False)]
+        filtered_df = filtered_df.head(num)  # Filter the desired number of rows
 
         if filtered_df.empty:
-            await ctx.send(f"No results found for '{keywords}'")
+            await ctx.send(f"No results found for '{keyword}'")
         else:
             messages = []
             for index, row in filtered_df.iterrows():
@@ -78,7 +75,7 @@ async def bid(ctx, *, query: str):
         num = int(num)
         df = pd.read_csv("filtered_bids_data.csv")
         filtered_df = df[df['bidNtceNm'].str.contains(keyword, na=False)]
-        filtered_df = filtered_df.head(num)
+        filtered_df = filtered_df.head(num)  # Filter the desired number of rows
 
         if filtered_df.empty:
             await ctx.send(f"No results found for '{keyword}'")
@@ -99,16 +96,14 @@ async def bid(ctx, *, query: str):
             for message in messages:
                 await ctx.send(message)
 
-@tasks.loop(hours=24)  # 24시간마다 실행
-async def update_data():
+# Define the update task
+@tasks.loop(hours=24)  # Update data every 24 hours
+async def update_data_task():
+    from update_data import update_prebids_data, update_bids_data
     update_prebids_data()
     update_bids_data()
-    print("Data updated.")
 
 bot.run(TOKEN)
-
-
-
 
 # .\\venv\\Scripts\\activate
 # python main.py
