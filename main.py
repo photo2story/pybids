@@ -4,10 +4,10 @@ import pandas as pd
 import discord
 from discord.ext import commands, tasks
 
-# Load environment variables
+# 환경 변수에서 API 키를 로드
 load_dotenv()
 
-# Discord settings
+# Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
 CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
 
@@ -53,12 +53,13 @@ async def prebid(ctx, *, query: str):
             for index, row in filtered_df.iterrows():
                 asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
                 msg = (
-                    f"\n"
-                    f"\n[{index + 1}] : 등록번호: {row['bfSpecRgstNo']}\n"
+                    f"\n[{index + 1}]\n"
+                    f"등록번호: {row['bfSpecRgstNo']}\n"
                     f"{row['orderInsttNm']}\n"
                     f"{row['prdctClsfcNoNm']}\n"
                     f"{asignBdgtAmt}\n"
                     f"{row['rcptDt']}\n"
+                    f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={row['bfSpecRgstNo']}\n"
                 )
                 messages.append(msg)
 
@@ -86,12 +87,13 @@ async def bid(ctx, *, query: str):
             for index, row in filtered_df.iterrows():
                 presmptPrce = f"{int(row['presmptPrce']):,}원"
                 msg = (
-                    f"\n"
-                    f"\n[{index + 1}] : 등록번호: {row['bidNtceNo']}\n"
+                    f"\n[{index + 1}]\n"
+                    f"등록번호: {row['bidNtceNo']}\n"
                     f"{row['ntceInsttNm']}\n"
                     f"{row['bidNtceNm']}\n"
                     f"{presmptPrce}\n"
                     f"{row['bidNtceDt']}\n"
+                    f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}\n"
                 )
                 messages.append(msg)
 

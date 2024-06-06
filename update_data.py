@@ -5,11 +5,11 @@ import json
 import pandas as pd
 import datetime
 
-# Load environment variables
+# 환경 변수에서 API 키를 로드
 load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
-# Function to fetch data using cURL
+# cURL 명령어 실행
 def fetch_data_with_curl(url, params):
     query_string = '&'.join([f"{key}={value}" for key, value in params.items()])
     full_url = f"{url}?{query_string}"
@@ -25,13 +25,17 @@ def fetch_data_with_curl(url, params):
         print(f"An error occurred: {e}")
     return None
 
-# Function to update data
+# 데이터 업데이트 함수
 def update_data(file_name, url, params, columns, date_column):
     try:
-        df_existing = pd.read_csv(file_name)
-        last_update = pd.to_datetime(df_existing[date_column]).max()
+        if os.path.exists(file_name):
+            df_existing = pd.read_csv(file_name)
+            last_update = pd.to_datetime(df_existing[date_column]).max()
 
-        start_date = (last_update + pd.Timedelta(days=1)).strftime('%Y%m%d') + '0000'
+            start_date = (last_update + pd.Timedelta(days=1)).strftime('%Y%m%d') + '0000'
+        else:
+            start_date = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y%m%d') + '0000'
+        
         end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
         params['inqryBgnDt'] = start_date
         params['inqryEndDt'] = end_date
@@ -57,7 +61,10 @@ def update_data(file_name, url, params, columns, date_column):
             print(f"Fetched columns: {df_new.columns.tolist()}")  # Print fetched columns for debugging
             if set(columns).issubset(df_new.columns):
                 df_new = df_new[columns]
-                df_combined = pd.concat([df_existing, df_new]).drop_duplicates(subset=columns)
+                if os.path.exists(file_name):
+                    df_combined = pd.concat([df_existing, df_new]).drop_duplicates(subset=columns)
+                else:
+                    df_combined = df_new
                 df_combined.to_csv(file_name, index=False, encoding='utf-8-sig')
                 print(f"Data updated and saved to {file_name}")
             else:
@@ -67,7 +74,7 @@ def update_data(file_name, url, params, columns, date_column):
     except Exception as e:
         print(f"An error occurred while updating data: {e}")
 
-# Function to update prebid data
+# 사전규격 데이터 업데이트 함수
 def update_prebids_data():
     url = "https://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getPublicPrcureThngInfoServc"
     params = {
@@ -79,7 +86,7 @@ def update_prebids_data():
     columns = ['bfSpecRgstNo', 'orderInsttNm', 'prdctClsfcNoNm', 'asignBdgtAmt', 'rcptDt']
     update_data("filtered_prebids_data.csv", url, params, columns, 'rcptDt')
 
-# Function to update bid data
+# 입찰 데이터 업데이트 함수
 def update_bids_data():
     url = "https://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getPublicPrcureThngInfoServc"
     params = {
@@ -90,6 +97,7 @@ def update_bids_data():
     }
     columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
     update_data("filtered_bids_data.csv", url, params, columns, 'bidNtceDt')
+
 
 
 
