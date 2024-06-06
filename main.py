@@ -39,14 +39,15 @@ async def prebid(ctx, *, query: str):
         url = f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={prebid_number}"
         await ctx.send(url)
     else:
-        num, keyword = query.split(' ', 1)
+        num, keywords = query.split(' ', 1)
         num = int(num)
+        keywords_list = keywords.split(',')
         df = pd.read_csv("filtered_prebids_data.csv")
-        filtered_df = df[df['prdctClsfcNoNm'].str.contains(keyword, na=False)]
+        filtered_df = df[df['prdctClsfcNoNm'].str.contains('|'.join(keywords_list), na=False)]
         filtered_df = filtered_df.head(num)  # Filter the desired number of rows
 
         if filtered_df.empty:
-            await ctx.send(f"No results found for '{keyword}'")
+            await ctx.send(f"No results found for '{keywords}'")
         else:
             messages = []
             for index, row in filtered_df.iterrows():
@@ -71,14 +72,15 @@ async def bid(ctx, *, query: str):
         url = f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={bid_number}"
         await ctx.send(url)
     else:
-        num, keyword = query.split(' ', 1)
+        num, keywords = query.split(' ', 1)
         num = int(num)
+        keywords_list = keywords.split(',')
         df = pd.read_csv("filtered_bids_data.csv")
-        filtered_df = df[df['bidNtceNm'].str.contains(keyword, na=False)]
+        filtered_df = df[df['bidNtceNm'].str.contains('|'.join(keywords_list), na=False)]
         filtered_df = filtered_df.head(num)  # Filter the desired number of rows
 
         if filtered_df.empty:
-            await ctx.send(f"No results found for '{keyword}'")
+            await ctx.send(f"No results found for '{keywords}'")
         else:
             messages = []
             for index, row in filtered_df.iterrows():
@@ -104,7 +106,6 @@ async def update_data_task():
     update_bids_data()
 
 bot.run(TOKEN)
-
 
 
 # .\\venv\\Scripts\\activate

@@ -55,7 +55,7 @@ def update_data(file_name, url, params, columns, date_column):
         if all_data:
             df_new = pd.DataFrame(all_data)
             print(f"Fetched columns: {df_new.columns.tolist()}")  # Print fetched columns for debugging
-            if all(col in df_new.columns for col in columns):
+            if set(columns).issubset(df_new.columns):
                 df_new = df_new[columns]
                 df_combined = pd.concat([df_existing, df_new]).drop_duplicates(subset=columns)
                 df_combined.to_csv(file_name, index=False, encoding='utf-8-sig')
@@ -90,4 +90,7 @@ def update_bids_data():
     }
     columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
     update_data("filtered_bids_data.csv", url, params, columns, 'bidNtceDt')
+
+
+
 
