@@ -105,5 +105,7 @@ async def update_data_task():
 
 bot.run(TOKEN)
 
+
+
 # .\\venv\\Scripts\\activate
 # python main.py
