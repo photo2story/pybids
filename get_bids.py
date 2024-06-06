@@ -7,13 +7,12 @@ import json
 import pandas as pd
 import datetime
 
-# 환경 변수에서 API 키를 로드
+# Load API key from environment variables
 load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
-# cURL 명령어 실행
 def fetch_data_with_curl(page_no, start_date, end_date):
-    base_url = "https://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc"
+    base_url = "https://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getPublicPrcureThngInfoServc"
     params = {
         'serviceKey': api_key,
         'pageNo': page_no,
@@ -29,7 +28,6 @@ def fetch_data_with_curl(page_no, start_date, end_date):
     try:
         result = subprocess.run(['curl', '-k', url], capture_output=True, text=True, encoding='utf-8')
         if result.returncode == 0:
-            # print(f"Response status code: {result.returncode}")
             return result.stdout
         else:
             print("Failed to connect.")
@@ -63,19 +61,20 @@ if __name__ == "__main__":
         df.to_csv(file_path, index=False, encoding='utf-8-sig')
         print(f"Filtered data saved to {file_path}")
         
-        # 필터링된 데이터
+        # Filter data based on keywords
         keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량", "제안", "공모"]
         keyword_pattern = '|'.join(keywords)
         filtered_df = df[df['bidNtceNm'].str.contains(keyword_pattern, na=False)]
-        pd.set_option('display.max_rows', None)  # 모든 행 출력
+        pd.set_option('display.max_rows', None)
         print(filtered_df)
         
-        # 필터링된 데이터 저장
+        # Save filtered data
         filtered_file_path = "filtered_bids_data.csv"
         filtered_df.to_csv(filtered_file_path, index=False, encoding='utf-8-sig')
         print(f"Filtered data saved to {filtered_file_path}")
     else:
         print("No data found")
+
 
 
 # python get_bids.py
