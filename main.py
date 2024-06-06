@@ -4,6 +4,7 @@ import pandas as pd
 import discord
 from discord.ext import commands, tasks
 from update_data import update_prebids_data, update_bids_data
+from discord.ext import tasks
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
@@ -27,7 +28,7 @@ async def on_ready():
         await channel.send(f'prebid 100 하수, prebid n 1444267')
     else:
         print(f"채널을 찾을 수 없습니다: {CHANNEL_ID}")
-    update_data.start()
+    update_data_task.start()
 
 @bot.command(name='ping')
 async def ping(ctx):
