@@ -3,6 +3,9 @@ from dotenv import load_dotenv
 import pandas as pd
 import discord
 from discord.ext import commands, tasks
+import subprocess
+import json
+import datetime
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
@@ -54,7 +57,7 @@ async def prebid(ctx, *, query: str):
                 asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
                 msg = (
                     f"\n[{index + 1}]\n"
-                    f"등록번호: {row['bfSpecRgstNo']}\n"
+                    f"\n등록번호: {row['bfSpecRgstNo']}\n"
                     f"{row['orderInsttNm']}\n"
                     f"{row['prdctClsfcNoNm']}\n"
                     f"{asignBdgtAmt}\n"
@@ -88,12 +91,12 @@ async def bid(ctx, *, query: str):
                 presmptPrce = f"{int(row['presmptPrce']):,}원"
                 msg = (
                     f"\n[{index + 1}]\n"
-                    f"등록번호: {row['bidNtceNo']}\n"
+                    f"\n등록번호: {row['bidNtceNo']}\n"
                     f"{row['ntceInsttNm']}\n"
                     f"{row['bidNtceNm']}\n"
                     f"{presmptPrce}\n"
                     f"{row['bidNtceDt']}\n"
-                    f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}\n"
+                    f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}"
                 )
                 messages.append(msg)
 
@@ -103,11 +106,21 @@ async def bid(ctx, *, query: str):
 # Define the update task
 @tasks.loop(hours=24)  # Update data every 24 hours
 async def update_data_task():
-    from update_data import update_prebids_data, update_bids_data
-    update_prebids_data()
-    update_bids_data()
+    fetch_data_and_update("get_prebids.py")
+    fetch_data_and_update("get_bids.py")
+
+def fetch_data_and_update(script_name):
+    try:
+        result = subprocess.run(['python', script_name], capture_output=True, text=True, encoding='utf-8')
+        if result.returncode == 0:
+            print(f"Script {script_name} executed successfully.")
+        else:
+            print(f"Script {script_name} failed with status code {result.returncode}.")
+    except Exception as e:
+        print(f"An error occurred while executing {script_name}: {e}")
 
 bot.run(TOKEN)
+
 
 
 # .\\venv\\Scripts\\activate

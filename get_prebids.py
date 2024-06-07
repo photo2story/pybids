@@ -36,13 +36,31 @@ def fetch_data_with_curl(page_no, start_date, end_date):
         print(f"An error occurred: {e}")
     return None
 
+# JSON 데이터를 CSV로 저장
+def save_to_csv(data, file_path, columns):
+    try:
+        json_data = json.loads(data)
+        items = json_data.get('response', {}).get('body', {}).get('items', [])
+        if not items:
+            print("No data found")
+            return
+        
+        df = pd.DataFrame(items)
+        df = df[columns]
+        df.to_csv(file_path, index=False, encoding='utf-8-sig')
+        print(f"Data saved to {file_path}")
+    except Exception as e:
+        print(f"An error occurred while saving to CSV: {e}")
+
 if __name__ == "__main__":
     start_date = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y%m%d') + '0000'
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
     page_no = 1
-    
+    columns = ['bfSpecRgstNo', 'orderInsttNm', 'prdctClsfcNoNm', 'asignBdgtAmt', 'rcptDt']
+    file_path = "filtered_prebids_data.csv"
+
     while True:
         data = fetch_data_with_curl(page_no, start_date, end_date)
         if data:
@@ -62,33 +80,26 @@ if __name__ == "__main__":
     
     if all_data:
         df_new = pd.DataFrame(all_data)
-        columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
-
-        # Check if the required columns are in the new dataframe
-        missing_columns = [col for col in columns if col not in df_new.columns]
-        if missing_columns:
-            print(f"Missing columns in the fetched data: {missing_columns}")
+        df_new = df_new[columns]  # 필요한 열만 선택
+        
+        if os.path.exists(file_path):
+            df_existing = pd.read_csv(file_path)
+            total_fetched_ids = len(df_new)
+            existing_ids = len(df_existing)
+            common_ids = df_existing['bfSpecRgstNo'].isin(df_new['bfSpecRgstNo']).sum()
+            new_unique_ids = total_fetched_ids - common_ids
+            
+            print(f"Total fetched IDs: {total_fetched_ids}")
+            print(f"Existing IDs: {existing_ids}")
+            print(f"Common IDs: {common_ids}")
+            print(f"New unique IDs: {new_unique_ids}")
+            
+            merged_df = pd.concat([df_existing, df_new]).drop_duplicates(subset='bfSpecRgstNo', keep='last')
+            merged_df.to_csv(file_path, index=False, encoding='utf-8-sig')
         else:
-            if os.path.exists("filtered_bids_data.csv"):
-                df_existing = pd.read_csv("filtered_bids_data.csv")
-                print(f"Total fetched IDs: {len(df_new)}")
-                print(f"Existing IDs: {len(df_existing)}")
-
-                common_ids = df_existing['bidNtceNo'].isin(df_new['bidNtceNo']).sum()
-                new_unique_ids = len(df_new) - common_ids
-
-                print(f"Common IDs: {common_ids}")
-                print(f"New unique IDs: {new_unique_ids}")
-
-                merged_df = pd.concat([df_existing, df_new]).drop_duplicates(subset='bidNtceNo', keep='last')
-                merged_df = merged_df[columns]  # 5개 필드로 필터링
-                merged_df.to_csv("filtered_bids_data.csv", index=False, encoding='utf-8-sig')
-            else:
-                df_new = df_new[columns]  # 5개 필드로 필터링
-                df_new.to_csv("filtered_bids_data.csv", index=False, encoding='utf-8-sig')
-                print(f"Data saved to filtered_bids_data.csv")
+            save_to_csv(data, file_path, columns)
     else:
         print("No data found")
 
 
-# python get_bids.py
+# python get_prebids.py
