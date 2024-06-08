@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
-                const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
+                const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.slice(0, 10) === date);
+                const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.slice(0, 10) === date);
 
                 displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt');
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt');
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
-            const date = item[dateKey] ? item[dateKey].split(' ')[0] : ''; // 날짜만 추출, 날짜가 없을 경우 빈 문자열
+            const date = item[dateKey] ? item[dateKey].slice(0, 10) : ''; // 날짜만 추출, 날짜가 없을 경우 빈 문자열
             task.innerHTML = `<span>${date} ${item[key]}</span><input type="checkbox">`;
             container.appendChild(task);
         });
