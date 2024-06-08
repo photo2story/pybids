@@ -113,8 +113,8 @@ async def show(ctx, date: str):
     # Bid updates
     df_bids = pd.read_csv("filtered_bids_data.csv")
     df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt']).dt.date
-    df_bids['sendOk'] = df_bids['sendOk'].fillna(0)
-    new_bids = df_bids[(df_bids['bidNtceDt'] == specific_date) & (df_bids['sendOk'] == 0)]
+    df_bids['sendOK'] = df_bids['sendOK'].fillna(0)
+    new_bids = df_bids[(df_bids['bidNtceDt'] == specific_date) & (df_bids['sendOK'] == 0)]
     for index, row in new_bids.iterrows():
         msg = (
             f"\n[{index + 1}] : 등록번호: {row['bidNtceNo']}\n"
@@ -130,8 +130,8 @@ async def show(ctx, date: str):
     # Prebid updates
     df_prebids = pd.read_csv("filtered_prebids_data.csv")
     df_prebids['rcptDt'] = pd.to_datetime(df_prebids['rcptDt']).dt.date
-    df_prebids['sendOk'] = df_prebids['sendOk'].fillna(0)
-    new_prebids = df_prebids[(df_prebids['rcptDt'] == specific_date) & (df_prebids['sendOk'] == 0)]
+    df_prebids['sendOK'] = df_prebids['sendOK'].fillna(0)
+    new_prebids = df_prebids[(df_prebids['rcptDt'] == specific_date) & (df_prebids['sendOK'] == 0)]
     for index, row in new_prebids.iterrows():
         asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
         msg = (
@@ -143,7 +143,7 @@ async def show(ctx, date: str):
             f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={row['bfSpecRgstNo']}"
         )
         prebid_updates.append(msg)
-        df_prebids.loc[df_prebids['bfSpecRgstNo'] == row['bfSpecRgstNo'], 'sendOk'] = 1
+        df_prebids.loc[df_prebids['bfSpecRgstNo'] == row['bfSpecRgstNo'], 'sendOK'] = 1
 
     if bid_updates:
         await ctx.send("**해당 날짜의 입찰 공고:**")
