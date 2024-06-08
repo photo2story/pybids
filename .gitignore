@@ -1,0 +1,23 @@
+# Visual Studio ���� ���� �� ���丮 ����
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Python ���� ���� ����
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+ENV.*/
+venv.*/
+# Ignore virtual environment files
+myenv/
+.env
+*.png
+# *.csv
