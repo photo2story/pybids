@@ -3,29 +3,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const bidsSection = document.getElementById('bids-section');
     const prebidsSection = document.getElementById('prebids-section');
 
-    // 현재 날짜를 yyyy-mm-dd 형식으로 포맷
     const today = new Date().toISOString().split('T')[0];
     dateInput.value = today;
 
-    // 페이지 로드 시 오늘 날짜의 데이터 로드
     loadAndDisplayData(today);
 
-    // 날짜 변경 시 선택한 날짜의 데이터 로드
     dateInput.addEventListener('change', () => {
         const selectedDate = dateInput.value;
         loadAndDisplayData(selectedDate);
     });
 
     function loadAndDisplayData(date) {
-        console.log(`Loading data for date: ${date}`); // 디버깅 로그
+        console.log(`Loading data for date: ${date}`);
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                console.log('Data loaded:', data); // 디버깅 로그
+                console.log('Data loaded:', data);
                 const bids = data.bids.filter(bid => bid.bidNtceDt === date);
                 const prebids = data.prebids.filter(prebid => prebid.rcptDt === date);
-                console.log('Filtered bids:', bids); // 디버깅 로그
-                console.log('Filtered prebids:', prebids); // 디버깅 로그
+                console.log('Filtered bids:', bids);
+                console.log('Filtered prebids:', prebids);
 
                 displayData(bids, bidsSection, 'bidNtceNm');
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm');
