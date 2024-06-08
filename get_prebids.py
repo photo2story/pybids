@@ -1,3 +1,4 @@
+# get_prebids.py
 import os
 from dotenv import load_dotenv
 import subprocess
@@ -7,8 +8,9 @@ import datetime
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
-api_key = os.getenv('BID_API_KEY')
+api_key = os.getenv('PREBID_API_KEY')
 
+# cURL 명령어 실행
 def fetch_data_with_curl(page_no, start_date, end_date):
     base_url = "https://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getPublicPrcureThngInfoServc"
     params = {
@@ -33,8 +35,14 @@ def fetch_data_with_curl(page_no, start_date, end_date):
         print(f"An error occurred: {e}")
     return None
 
-def update_prebids_data():
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime('%Y%m%d') + '0000'
+def save_to_csv(data, file_path, columns):
+    df = pd.DataFrame(data)
+    df = df[columns]
+    df.to_csv(file_path, index=False, encoding='utf-8-sig')
+    print(f"Filtered data saved to {file_path}")
+
+if __name__ == "__main__":
+    start_date = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y%m%d') + '0000'
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
@@ -52,36 +60,36 @@ def update_prebids_data():
                 page_no += 1
             except json.JSONDecodeError as e:
                 print(f"JSON decode error: {e}")
-                print(f"Response content was not valid JSON:\n{data[:1000]}")  # Displaying the first 1000 characters for context
+                print(f"Response content: {data}")
                 break
         else:
             break
     
     if all_data:
+        df_new = pd.DataFrame(all_data)
         columns = ['bfSpecRgstNo', 'orderInsttNm', 'prdctClsfcNoNm', 'asignBdgtAmt', 'rcptDt']
-        df_new = pd.DataFrame(all_data)[columns]
-        
-        file_path = "filtered_prebids_data.csv"
-        if os.path.exists(file_path):
-            df_existing = pd.read_csv(file_path)
+        if not os.path.exists('filtered_prebids_data.csv'):
+            save_to_csv(df_new, 'filtered_prebids_data.csv', columns)
+        else:
+            df_existing = pd.read_csv('filtered_prebids_data.csv')
             common_ids = df_existing['bfSpecRgstNo'].isin(df_new['bfSpecRgstNo']).sum()
-            unique_new = len(df_new) - common_ids
-            total_ids = len(df_existing) + unique_new
+            new_ids = len(df_new) - common_ids
             print(f"Total fetched IDs: {len(df_new)}")
             print(f"Existing IDs: {len(df_existing)}")
             print(f"Common IDs: {common_ids}")
-            print(f"New unique IDs: {unique_new}")
+            print(f"New unique IDs: {new_ids}")
             
             merged_df = pd.concat([df_existing, df_new]).drop_duplicates(subset='bfSpecRgstNo', keep='last')
-            merged_df.to_csv(file_path, index=False, encoding='utf-8-sig')
-        else:
-            df_new.to_csv(file_path, index=False, encoding='utf-8-sig')
+            merged_df.to_csv('filtered_prebids_data.csv', index=False, encoding='utf-8-sig')
+
+        # 필터링된 데이터
+        keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량", "제안", "공모"]
+        keyword_pattern = '|'.join(keywords)
+        filtered_df = df_new[df_new['prdctClsfcNoNm'].str.contains(keyword_pattern, na=False)]
+        if not filtered_df.empty:
+            save_to_csv(filtered_df, 'filtered_prebids_data.csv', columns)
     else:
         print("No data found")
-
-if __name__ == "__main__":
-    update_prebids_data()
-
 
 
 
