@@ -20,4 +20,4 @@ venv.*/
 myenv/
 .env
 *.png
-*.csv
+# *.csv
