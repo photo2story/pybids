@@ -7,8 +7,8 @@ def csv_to_json(bids_csv_file, prebids_csv_file, json_file_path):
     prebids_df = pd.read_csv(prebids_csv_file)
     
     # 필요한 데이터 추출
-    bids = bids_df['bidNtceNm'].tolist()
-    prebids = prebids_df['prdctClsfcNoNm'].tolist()
+    bids = bids_df[['bidNtceDt', 'bidNtceNm']].to_dict(orient='records')
+    prebids = prebids_df[['rcptDt', 'prdctClsfcNoNm']].to_dict(orient='records')
 
     # JSON 데이터 구성
     data = {
@@ -27,5 +27,6 @@ json_file_path = 'data.json'  # 출력 JSON 파일 경로
 
 # CSV에서 JSON으로 변환
 csv_to_json(bids_csv_file, prebids_csv_file, json_file_path)
+
 
 # python export_json.py

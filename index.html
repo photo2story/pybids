@@ -9,23 +9,16 @@
 <body>
     <div class="container">
         <h1>오늘의 공고</h1>
-        <div class="section">
+        <label for="date">날짜 선택: </label>
+        <input type="date" id="date" name="date">
+        <div class="section" id="bids-section">
             <h2>오늘의 공고</h2>
-            <div class="task">
-                <span>예산감산을 위한 유의 사항</span>
-                <input type="checkbox">
-            </div>
-            <!-- 추가 공고는 여기 추가 -->
         </div>
-        <div class="section">
+        <div class="section" id="prebids-section">
             <h2>오늘의 사전공고</h2>
-            <div class="task">
-                <span>사전공고 1</span>
-                <input type="checkbox">
-            </div>
-            <!-- 추가 사전공고는 여기 추가 -->
         </div>
     </div>
     <script src="script.js"></script>
 </body>
 </html>
+
