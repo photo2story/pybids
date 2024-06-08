@@ -9,9 +9,8 @@ import datetime
 load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
-# cURL 명령어 실행
 def fetch_data_with_curl(page_no, start_date, end_date):
-    base_url = "https://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getPublicPrcureThngInfoServc"
+    base_url = "https://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoServc"
     params = {
         'serviceKey': api_key,
         'pageNo': page_no,
@@ -27,8 +26,6 @@ def fetch_data_with_curl(page_no, start_date, end_date):
     try:
         result = subprocess.run(['curl', '-k', url], capture_output=True, text=True, encoding='utf-8')
         if result.returncode == 0:
-            print(f"Response status code: {result.returncode}")
-            print(f"Response content: {result.stdout[:500]}")  # 응답 내용 일부 출력
             return result.stdout
         else:
             print("Failed to connect.")
@@ -36,8 +33,8 @@ def fetch_data_with_curl(page_no, start_date, end_date):
         print(f"An error occurred: {e}")
     return None
 
-if __name__ == "__main__":
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y%m%d') + '0000'
+def update_bids_data():
+    start_date = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime('%Y%m%d') + '0000'
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
@@ -55,40 +52,36 @@ if __name__ == "__main__":
                 page_no += 1
             except json.JSONDecodeError as e:
                 print(f"JSON decode error: {e}")
-                print(f"Response content was not valid JSON:\n{data}")
+                print(f"Response content was not valid JSON:\n{data[:1000]}")  # Displaying the first 1000 characters for context
                 break
         else:
             break
     
     if all_data:
-        df_new = pd.DataFrame(all_data)
         columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
-
-        # Check if the required columns are in the new dataframe
-        missing_columns = [col for col in columns if col not in df_new.columns]
-        if missing_columns:
-            print(f"Missing columns in the fetched data: {missing_columns}")
+        df_new = pd.DataFrame(all_data)[columns]
+        
+        file_path = "filtered_bids_data.csv"
+        if os.path.exists(file_path):
+            df_existing = pd.read_csv(file_path)
+            common_ids = df_existing['bidNtceNo'].isin(df_new['bidNtceNo']).sum()
+            unique_new = len(df_new) - common_ids
+            total_ids = len(df_existing) + unique_new
+            print(f"Total fetched IDs: {len(df_new)}")
+            print(f"Existing IDs: {len(df_existing)}")
+            print(f"Common IDs: {common_ids}")
+            print(f"New unique IDs: {unique_new}")
+            
+            merged_df = pd.concat([df_existing, df_new]).drop_duplicates(subset='bidNtceNo', keep='last')
+            merged_df.to_csv(file_path, index=False, encoding='utf-8-sig')
         else:
-            if os.path.exists("filtered_bids_data.csv"):
-                df_existing = pd.read_csv("filtered_bids_data.csv")
-                print(f"Total fetched IDs: {len(df_new)}")
-                print(f"Existing IDs: {len(df_existing)}")
-
-                common_ids = df_existing['bidNtceNo'].isin(df_new['bidNtceNo']).sum()
-                new_unique_ids = len(df_new) - common_ids
-
-                print(f"Common IDs: {common_ids}")
-                print(f"New unique IDs: {new_unique_ids}")
-
-                merged_df = pd.concat([df_existing, df_new]).drop_duplicates(subset='bidNtceNo', keep='last')
-                merged_df = merged_df[columns]  # 5개 필드로 필터링
-                merged_df.to_csv("filtered_bids_data.csv", index=False, encoding='utf-8-sig')
-            else:
-                df_new = df_new[columns]  # 5개 필드로 필터링
-                df_new.to_csv("filtered_bids_data.csv", index=False, encoding='utf-8-sig')
-                print(f"Data saved to filtered_bids_data.csv")
+            df_new.to_csv(file_path, index=False, encoding='utf-8-sig')
     else:
         print("No data found")
+
+if __name__ == "__main__":
+    update_bids_data()
+
 
 
 # python get_bids.py
