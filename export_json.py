@@ -10,10 +10,6 @@ def csv_to_json(bids_csv_file, prebids_csv_file, json_file_path):
     bids_df = bids_df.dropna(subset=['bidNtceDt', 'bidNtceNm'])
     prebids_df = prebids_df.dropna(subset=['rcptDt', 'prdctClsfcNoNm'])
 
-    # bidNtceDt와 rcptDt가 NaN인 경우를 필터링
-    bids_df = bids_df[bids_df['bidNtceDt'].apply(lambda x: x == x)]  # NaN인 경우 False로 변환
-    prebids_df = prebids_df[prebids_df['rcptDt'].apply(lambda x: x == x)]  # NaN인 경우 False로 변환
-
     # 필요한 열만 선택
     bids_df = bids_df[['bidNtceDt', 'bidNtceNm']]
     prebids_df = prebids_df[['rcptDt', 'prdctClsfcNoNm']]
@@ -38,6 +34,5 @@ json_file_path = 'data.json'
 
 # 변환 함수 호출
 csv_to_json(bids_csv_file, prebids_csv_file, json_file_path)
-
 
 # python export_json.py
