@@ -17,7 +17,7 @@ CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
 
 intents = discord.Intents.default()
 intents.messages = True
-intents.message_content = True
+client = discord.Client(intents=intents)
 
 bot = commands.Bot(command_prefix='', intents=intents)
 
