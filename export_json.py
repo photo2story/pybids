@@ -21,8 +21,8 @@ def csv_to_json(bids_csv_file, prebids_csv_file, json_file_path):
         json.dump(data, json_file, ensure_ascii=False, indent=4)
 
 # 파일 경로 설정
-bids_csv_file = '/mnt/data/filtered_bids_data.csv'  # 공고 CSV 파일 경로
-prebids_csv_file = '/mnt/data/filtered_prebids_data.csv'  # 사전공고 CSV 파일 경로
+bids_csv_file = 'filtered_bids_data.csv'  # 공고 CSV 파일 경로
+prebids_csv_file = 'filtered_prebids_data.csv'  # 사전공고 CSV 파일 경로
 json_file_path = 'data.json'  # 출력 JSON 파일 경로
 
 # CSV에서 JSON으로 변환
