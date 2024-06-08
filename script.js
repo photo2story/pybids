@@ -33,9 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
-            const date = item[dateKey].split(' ')[0]; // 날짜만 추출
+            const date = item[dateKey] ? item[dateKey].split(' ')[0] : ''; // 날짜만 추출, 날짜가 없을 경우 빈 문자열
             task.innerHTML = `<span>${date} ${item[key]}</span><input type="checkbox">`;
             container.appendChild(task);
         });
     }
 });
+
