@@ -1,24 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyBids</title>
+    <title>Today's Bids</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>오늘의 공고</h1>
-        <label for="date">날짜 선택: </label>
-        <input type="date" id="date" name="date">
-        <div class="section" id="bids-section">
-            <h2>오늘의 공고</h2>
-        </div>
-        <div class="section" id="prebids-section">
-            <h2>오늘의 사전공고</h2>
-        </div>
+    <h1>오늘의 공고</h1>
+    <label for="date">날짜 선택:</label>
+    <input type="date" id="date">
+
+    <div id="bids-section">
+        <h2>오늘의 공고</h2>
     </div>
+    <div id="prebids-section">
+        <h2>오늘의 사전공고</h2>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
-
