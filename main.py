@@ -16,7 +16,8 @@ TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
 CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
 
 intents = discord.Intents.default()
-intents.messages = True
+intents.messages = True  # 기존의 message_content 대신 messages 사용
+
 client = discord.Client(intents=intents)
 
 bot = commands.Bot(command_prefix='', intents=intents)
@@ -27,7 +28,8 @@ async def on_ready():
     channel = bot.get_channel(int(CHANNEL_ID))
     if channel:
         await channel.send(f'Bot이 성공적으로 로그인했습니다: {bot.user.name}')
-
+        await channel.send("사용 가능한 명령어:\n- `bid <검색어>`: 공고 검색\n- `prebid <검색어>`: 사전 공고 검색\n- `show <YYYYMMDD>`: 특정 날짜의 새로운 공고 검색")
+        
 @bot.command(name='ping')
 async def ping(ctx):
     await ctx.send('pong')
