@@ -106,21 +106,70 @@ async def bid(ctx, *, query: str):
 # Define the update task
 @tasks.loop(hours=24)  # Update data every 24 hours
 async def update_data_task():
-    fetch_data_and_update("get_prebids.py")
-    fetch_data_and_update("get_bids.py")
+    await update_bids_data()
+    await update_prebids_data()
 
-def fetch_data_and_update(script_name):
+async def update_bids_data():
     try:
-        result = subprocess.run(['python', script_name], capture_output=True, text=True, encoding='utf-8')
+        result = subprocess.run(['python', 'get_bids.py'], capture_output=True, text=True, encoding='utf-8')
         if result.returncode == 0:
-            print(f"Script {script_name} executed successfully.")
+            print(f"Script get_bids.py executed successfully.")
+            # 당일 변동 사항 메시징
+            df = pd.read_csv("filtered_bids_data.csv")
+            today_str = datetime.datetime.now().strftime('%Y-%m-%d')
+            today_bids = df[df['bidNtceDt'].str.startswith(today_str)]
+            if not today_bids.empty:
+                messages = []
+                for index, row in today_bids.iterrows():
+                    presmptPrce = f"{int(row['presmptPrce']):,}원"
+                    msg = (
+                        f"\n# 당일 공고: {datetime.datetime.now().strftime('%Y.%m.%d %H:%M')}\n"
+                        f"# {row['bidNtceNm']} 용역이 공고되었습니다.\n"
+                        f"# {presmptPrce}\n"
+                        f"# http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}\n"
+                    )
+                    messages.append(msg)
+                
+                channel = bot.get_channel(int(CHANNEL_ID))
+                if channel:
+                    for message in messages:
+                        await channel.send(message)
         else:
-            print(f"Script {script_name} failed with status code {result.returncode}.")
+            print(f"Script get_bids.py failed with status code {result.returncode}.")
     except Exception as e:
-        print(f"An error occurred while executing {script_name}: {e}")
+        print(f"An error occurred while executing get_bids.py: {e}")
+
+async def update_prebids_data():
+    try:
+        result = subprocess.run(['python', 'get_prebids.py'], capture_output=True, text=True, encoding='utf-8')
+        if result.returncode == 0:
+            print(f"Script get_prebids.py executed successfully.")
+            # 당일 변동 사항 메시징
+            df = pd.read_csv("filtered_prebids_data.csv")
+            today_str = datetime.datetime.now().strftime('%Y-%m-%d')
+            today_prebids = df[df['rcptDt'].str.startswith(today_str)]
+            if not today_prebids.empty:
+                messages = []
+                for index, row in today_prebids.iterrows():
+                    asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
+                    msg = (
+                        f"\n# 당일 공고: {datetime.datetime.now().strftime('%Y.%m.%d %H:%M')}\n"
+                        f"# {row['prdctClsfcNoNm']} 용역이 사전공고되었습니다.\n"
+                        f"# {asignBdgtAmt}\n"
+                        f"# https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={row['bfSpecRgstNo']}\n"
+                    )
+                    messages.append(msg)
+                
+                channel = bot.get_channel(int(CHANNEL_ID))
+                if channel:
+                    for message in messages:
+                        await channel.send(message)
+        else:
+            print(f"Script get_prebids.py failed with status code {result.returncode}.")
+    except Exception as e:
+        print(f"An error occurred while executing get_prebids.py: {e}")
 
 bot.run(TOKEN)
-
 
 
 # .\\venv\\Scripts\\activate
