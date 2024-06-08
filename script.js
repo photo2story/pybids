@@ -17,11 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadAndDisplayData(date) {
+        console.log(`Loading data for date: ${date}`); // 디버깅 로그
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
+                console.log('Data loaded:', data); // 디버깅 로그
                 const bids = data.bids.filter(bid => bid.bidNtceDt === date);
                 const prebids = data.prebids.filter(prebid => prebid.rcptDt === date);
+                console.log('Filtered bids:', bids); // 디버깅 로그
+                console.log('Filtered prebids:', prebids); // 디버깅 로그
 
                 displayData(bids, bidsSection, 'bidNtceNm');
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm');
