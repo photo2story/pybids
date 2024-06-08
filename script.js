@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.startsWith(date));
-                const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.startsWith(date));
+                const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
+                const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
 
                 displayData(bids, bidsSection, 'bidNtceNm');
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm');
@@ -38,6 +38,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-
-
