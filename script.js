@@ -22,18 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
                 const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
 
-                displayData(bids, bidsSection, 'bidNtceNm');
-                displayData(prebids, prebidsSection, 'prdctClsfcNoNm');
+                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt');
+                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt');
             })
             .catch(error => console.error('Error loading data:', error));
     }
 
-    function displayData(items, container, key) {
+    function displayData(items, container, key, dateKey) {
         container.innerHTML = '';
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
-            task.innerHTML = `<span>${item[key]}</span><input type="checkbox">`;
+            const date = item[dateKey].split(' ')[0]; // 날짜만 추출
+            task.innerHTML = `<span>${date} ${item[key]}</span><input type="checkbox">`;
             container.appendChild(task);
         });
     }
