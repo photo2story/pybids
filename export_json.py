@@ -27,3 +27,5 @@ json_file_path = 'data.json'  # 출력 JSON 파일 경로
 
 # CSV에서 JSON으로 변환
 csv_to_json(bids_csv_file, prebids_csv_file, json_file_path)
+
+# python export_json.py
