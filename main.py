@@ -125,7 +125,7 @@ async def show(ctx, date: str):
             f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}"
         )
         bid_updates.append(msg)
-        df_bids.loc[df_bids['bidNtceNo'] == row['bidNtceNo'], 'sendOk'] = 1
+        df_bids.loc[df_bids['bidNtceNo'] == row['bidNtceNo'], 'sendOK'] = 1
 
     # Prebid updates
     df_prebids = pd.read_csv("filtered_prebids_data.csv")
