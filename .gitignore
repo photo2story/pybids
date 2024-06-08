@@ -20,3 +20,7 @@ venv.*/
 myenv/
 .env
 *.png
+<<<<<<< HEAD
+=======
+*.csv
+>>>>>>> parent of 8615c22 (gitignore)
