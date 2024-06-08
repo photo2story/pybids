@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayData(items, container, key) {
         container.innerHTML = '';
+        if (items.length === 0) {
+            container.innerHTML = '<p>데이터가 없습니다.</p>';
+            return;
+        }
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
@@ -38,5 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
