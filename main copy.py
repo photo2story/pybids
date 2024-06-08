@@ -129,8 +129,8 @@ async def show(ctx, date: str):
     # Prebid updates
     df_prebids = pd.read_csv("filtered_prebids_data.csv")
     df_prebids['rcptDt'] = pd.to_datetime(df_prebids['rcptDt']).dt.date
-    df_prebids['sendOk'] = df_prebids['sendOk'].fillna(0)
-    new_prebids = df_prebids[(df_prebids['rcptDt'] == specific_date) & (df_prebids['sendOk'] == 0)]
+    df_prebids['sendOK'] = df_prebids['sendOK'].fillna(0)
+    new_prebids = df_prebids[(df_prebids['rcptDt'] == specific_date) & (df_prebids['sendOK'] == 0)]
     for index, row in new_prebids.iterrows():
         asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
         msg = (
@@ -162,12 +162,6 @@ async def show(ctx, date: str):
     df_prebids.to_csv("filtered_prebids_data.csv", index=False, encoding='utf-8-sig')
 
 bot.run(TOKEN)
-
-# .\\venv\\Scripts\\activate
-# python main.py
-
-
-
 
 # .\\venv\\Scripts\\activate
 # python main.py
