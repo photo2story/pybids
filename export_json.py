@@ -35,5 +35,6 @@ json_file_path = 'data.json'
 # 변환 함수 호출
 csv_to_json(bids_csv_file, prebids_csv_file, json_file_path)
 
+print(f"Data successfully exported to {json_file_path}")
 
 # python export_json.py
