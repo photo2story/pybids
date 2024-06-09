@@ -228,7 +228,10 @@ async def update_data_task():
     fetch_data_and_update("get_bids.py")
     channel = bot.get_channel(int(CHANNEL_ID))
     if channel:
-        await show_updates(channel, datetime.date.today())
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(days=1)
+        await show_updates(channel, today)
+        await show_updates(channel, yesterday)
 
 def fetch_data_and_update(script_name):
     try:
@@ -241,6 +244,7 @@ def fetch_data_and_update(script_name):
         print(f"An error occurred while executing {script_name}: {e}")
 
 bot.run(TOKEN)
+
 
 
 # .\\venv\\Scripts\\activate

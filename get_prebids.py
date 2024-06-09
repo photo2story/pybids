@@ -1,4 +1,5 @@
 # get_prebids.py
+# get_prebids.py
 import os
 from dotenv import load_dotenv
 import subprocess
@@ -10,18 +11,22 @@ import datetime
 load_dotenv()
 api_key = os.getenv('PREBID_API_KEY')
 
+# 키워드 리스트
+keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량", "제안", "공모"]
+
 # cURL 명령어 실행
-def fetch_data_with_curl(page_no, start_date, end_date):
-    base_url = "https://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getPublicPrcureThngInfoServc"
+def fetch_data_with_curl(page_no, start_date, end_date, keyword):
+    base_url = "http://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getThngDetailMetaInfoServc"
     params = {
         'serviceKey': api_key,
         'pageNo': page_no,
         'numOfRows': 999,
         'type': 'json',
-        'inqryDiv': '1',
         'inqryBgnDt': start_date,
-        'inqryEndDt': end_date
+        'inqryEndDt': end_date,
+        'prdctClsfcNoNm': keyword  # API가 키워드 필터링을 지원
     }
+    
     query_string = '&'.join([f"{key}={value}" for key, value in params.items()])
     url = f"{base_url}?{query_string}"
     
@@ -46,28 +51,29 @@ if __name__ == "__main__":
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
-    page_no = 1
-    
-    while True:
-        data = fetch_data_with_curl(page_no, start_date, end_date)
-        if data:
-            try:
-                json_data = json.loads(data)
-                items = json_data.get('response', {}).get('body', {}).get('items', [])
-                if not items:
+    for keyword in keywords:
+        page_no = 1
+        while True:
+            data = fetch_data_with_curl(page_no, start_date, end_date, keyword)
+            if data:
+                try:
+                    json_data = json.loads(data)
+                    items = json_data.get('response', {}).get('body', {}).get('items', [])
+                    if not items:
+                        break
+                    all_data.extend(items)
+                    page_no += 1
+                except json.JSONDecodeError as e:
+                    print(f"JSON decode error: {e}")
+                    print(f"Response content: {data}")
                     break
-                all_data.extend(items)
-                page_no += 1
-            except json.JSONDecodeError as e:
-                print(f"JSON decode error: {e}")
-                print(f"Response content: {data}")
+            else:
                 break
-        else:
-            break
     
     if all_data:
         df_new = pd.DataFrame(all_data)
         columns = ['bfSpecRgstNo', 'orderInsttNm', 'prdctClsfcNoNm', 'asignBdgtAmt', 'rcptDt']
+
         if not os.path.exists('filtered_prebids_data.csv'):
             save_to_csv(df_new, 'filtered_prebids_data.csv', columns)
         else:
@@ -81,13 +87,6 @@ if __name__ == "__main__":
             
             merged_df = pd.concat([df_existing, df_new]).drop_duplicates(subset='bfSpecRgstNo', keep='last')
             merged_df.to_csv('filtered_prebids_data.csv', index=False, encoding='utf-8-sig')
-
-        # 필터링된 데이터
-        keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량", "제안", "공모"]
-        keyword_pattern = '|'.join(keywords)
-        filtered_df = df_new[df_new['prdctClsfcNoNm'].str.contains(keyword_pattern, na=False)]
-        if not filtered_df.empty:
-            save_to_csv(filtered_df, 'filtered_prebids_data.csv', columns)
     else:
         print("No data found")
 
