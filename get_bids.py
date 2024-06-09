@@ -1,97 +1,111 @@
 # get_bids.py
 import os
 from dotenv import load_dotenv
-import subprocess
-import json
+import requests
 import pandas as pd
 import datetime
+from xml.etree import ElementTree as ET
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
-# cURL 명령어 실행
-def fetch_data_with_curl(page_no, start_date, end_date):
-    base_url = "https://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoServc"
+# 키워드 리스트
+keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량", "제안", "공모"]
+
+# 데이터 가져오기
+def fetch_data(page_no, start_date, end_date, keyword):
+    base_url = "http://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getThngDetailMetaInfoServc"
     params = {
         'serviceKey': api_key,
         'pageNo': page_no,
         'numOfRows': 999,
-        'type': 'json',
-        'inqryDiv': '1',
         'inqryBgnDt': start_date,
-        'inqryEndDt': end_date
+        'inqryEndDt': end_date,
+        'bidNtceNm': keyword  # API가 키워드 필터링을 지원
     }
-    query_string = '&'.join([f"{key}={value}" for key, value in params.items()])
-    url = f"{base_url}?{query_string}"
     
-    try:
-        result = subprocess.run(['curl', '-k', url], capture_output=True, text=True, encoding='utf-8')
-        if result.returncode == 0:
-            return result.stdout
-        else:
-            print("Failed to connect.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    return None
+    response = requests.get(base_url, params=params)
+    if response.status_code == 200:
+        return response.content
+    else:
+        print(f"Failed to fetch data: {response.status_code}")
+        return None
 
+# XML 데이터 파싱
+def parse_xml(data):
+    root = ET.fromstring(data)
+    body = root.find('body')
+    if body is None:
+        return []
+    
+    items = body.find('items')
+    if items is None:
+        return []
+    
+    item_list = []
+    for item in items.findall('item'):
+        item_data = {
+            'bidNtceNo': item.find('bidNtceNo').text if item.find('bidNtceNo') is not None else '',
+            'ntceInsttNm': item.find('ntceInsttNm').text if item.find('ntceInsttNm') is not None else '',
+            'bidNtceNm': item.find('bidNtceNm').text if item.find('bidNtceNm') is not None else '',
+            'presmptPrce': item.find('presmptPrce').text if item.find('presmptPrce') is not None else '',
+            'bidNtceDt': item.find('bidNtceDt').text if item.find('bidNtceDt') is not None else ''
+        }
+        item_list.append(item_data)
+        
+    return item_list
+
+# 데이터 CSV로 저장
 def save_to_csv(data, file_path, columns):
     df = pd.DataFrame(data)
     df = df[columns]
     df.to_csv(file_path, index=False, encoding='utf-8-sig')
-    print(f"Filtered data saved to {file_path}")
+    print(f"Data saved to {file_path}")
 
 if __name__ == "__main__":
     start_date = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime('%Y%m%d') + '0000'
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
-    page_no = 1
-    
-    while True:
-        data = fetch_data_with_curl(page_no, start_date, end_date)
-        if data:
-            try:
-                json_data = json.loads(data)
-                items = json_data.get('response', {}).get('body', {}).get('items', [])
+    columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
+    file_path = "filtered_bids_data.csv"
+
+    for keyword in keywords:
+        page_no = 1
+        while True:
+            data = fetch_data(page_no, start_date, end_date, keyword)
+            if data:
+                items = parse_xml(data)
                 if not items:
                     break
                 all_data.extend(items)
                 page_no += 1
-            except json.JSONDecodeError as e:
-                print(f"JSON decode error: {e}")
-                print(f"Response content: {data}")
+            else:
                 break
-        else:
-            break
     
     if all_data:
         df_new = pd.DataFrame(all_data)
-        columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
-        if not os.path.exists('filtered_bids_data.csv'):
-            save_to_csv(df_new, 'filtered_bids_data.csv', columns)
-        else:
-            df_existing = pd.read_csv('filtered_bids_data.csv')
+        df_new = df_new[columns]  # 필요한 열만 선택
+        
+        if os.path.exists(file_path):
+            df_existing = pd.read_csv(file_path)
+            total_fetched_ids = len(df_new)
+            existing_ids = len(df_existing)
             common_ids = df_existing['bidNtceNo'].isin(df_new['bidNtceNo']).sum()
-            new_ids = len(df_new) - common_ids
-            print(f"Total fetched IDs: {len(df_new)}")
-            print(f"Existing IDs: {len(df_existing)}")
+            new_unique_ids = total_fetched_ids - common_ids
+            
+            print(f"Total fetched IDs: {total_fetched_ids}")
+            print(f"Existing IDs: {existing_ids}")
             print(f"Common IDs: {common_ids}")
-            print(f"New unique IDs: {new_ids}")
+            print(f"New unique IDs: {new_unique_ids}")
             
             merged_df = pd.concat([df_existing, df_new]).drop_duplicates(subset='bidNtceNo', keep='last')
-            merged_df.to_csv('filtered_bids_data.csv', index=False, encoding='utf-8-sig')
-
-        # 필터링된 데이터
-        keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량", "제안", "공모"]
-        keyword_pattern = '|'.join(keywords)
-        filtered_df = df_new[df_new['bidNtceNm'].str.contains(keyword_pattern, na=False)]
-        if not filtered_df.empty:
-            save_to_csv(filtered_df, 'filtered_bids_data.csv', columns)
+            merged_df.to_csv(file_path, index=False, encoding='utf-8-sig')
+        else:
+            save_to_csv(all_data, file_path, columns)
     else:
         print("No data found")
-
-
 
 
 # python get_bids.py

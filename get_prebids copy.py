@@ -53,7 +53,7 @@ def save_to_csv(data, file_path, columns):
         print(f"An error occurred while saving to CSV: {e}")
 
 if __name__ == "__main__":
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y%m%d') + '0000'
+    start_date = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime('%Y%m%d') + '0000'
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
@@ -102,4 +102,4 @@ if __name__ == "__main__":
         print("No data found")
 
 
-# python get_prebids.py
+# python get_prebids copy.py
