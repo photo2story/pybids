@@ -88,7 +88,7 @@ async def bid(ctx, *, query: str):
         else:
             messages = []
             for index, row in filtered_df.iterrows():
-                presmptPrce = f"{int(row['presmptPrce']):,}원"
+                presmptPrce = f"{int(row['presmptPrce']):,}원" if pd.notnull(row['presmptPrce']) else "정보 없음"
                 msg = (
                     f"\n[{index + 1}]\n"
                     f"\n등록번호: {row['bidNtceNo']}\n"
@@ -102,6 +102,7 @@ async def bid(ctx, *, query: str):
 
             for message in messages:
                 await ctx.send(message)
+
 
 async def show_updates(channel, specific_date):
     # 필터링된 공고
@@ -176,11 +177,12 @@ async def show(ctx, *, query: str):
         df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt'], errors='coerce').dt.date
         new_bids = df_bids[df_bids['bidNtceDt'] == specific_date]
         for index, row in new_bids.iterrows():
+            presmptPrce = f"{int(row['presmptPrce']):,}원" if pd.notnull(row['presmptPrce']) else "정보 없음"
             msg = (
                 f"\n[{index + 1}] : 등록번호: {row['bidNtceNo']}\n"
                 f"{row['ntceInsttNm']}\n"
                 f"{row['bidNtceNm']}\n"
-                f"{row['presmptPrce']}원\n"
+                f"{presmptPrce}\n"
                 f"{row['bidNtceDt']}\n"
                 f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}"
             )
@@ -191,7 +193,7 @@ async def show(ctx, *, query: str):
         df_prebids['rcptDt'] = pd.to_datetime(df_prebids['rcptDt'], errors='coerce').dt.date
         new_prebids = df_prebids[df_prebids['rcptDt'] == specific_date]
         for index, row in new_prebids.iterrows():
-            asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
+            asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원" if pd.notnull(row['asignBdgtAmt']) else "정보 없음"
             msg = (
                 f"\n[{index + 1}] : 등록번호: {row['bfSpecRgstNo']}\n"
                 f"{row['orderInsttNm']}\n"
@@ -215,6 +217,7 @@ async def show(ctx, *, query: str):
                 await ctx.send(message)
         else:
             await ctx.send("해당 날짜의 새로운 사전 공고가 없습니다.")
+
     
 # Define the update task
 @tasks.loop(hours=24)  # Update data every 24 hours
