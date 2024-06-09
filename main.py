@@ -103,19 +103,7 @@ async def bid(ctx, *, query: str):
             for message in messages:
                 await ctx.send(message)
 
-@bot.command(name='show')
-async def show(ctx, *, query: str):
-    if query == "new":
-        today = datetime.date.today()
-        await show_updates(ctx, today)
-    else:
-        try:
-            specific_date = datetime.datetime.strptime(query, "%Y%m%d").date()
-            await show_updates(ctx, specific_date)
-        except ValueError:
-            await ctx.send("날짜 형식이 잘못되었습니다. YYYYMMDD 형식으로 입력해주세요.")
-
-async def show_updates(ctx, specific_date):
+async def show_updates(channel, specific_date):
     # 필터링된 공고
     bid_updates = []
     prebid_updates = []
@@ -156,21 +144,77 @@ async def show_updates(ctx, specific_date):
         df_prebids.loc[df_prebids['bfSpecRgstNo'] == row['bfSpecRgstNo'], 'sendOK'] = 1
 
     if bid_updates:
-        await ctx.send("**해당 날짜의 입찰 공고:**")
+        await channel.send("**해당 날짜의 입찰 공고:**")
         for message in bid_updates:
-            await ctx.send(message)
+            await channel.send(message)
     else:
-        await ctx.send("해당 날짜의 새로운 입찰 공고가 없습니다.")
+        await channel.send("해당 날짜의 새로운 입찰 공고가 없습니다.")
 
     if prebid_updates:
-        await ctx.send("**해당 날짜의 사전 공고:**")
+        await channel.send("**해당 날짜의 사전 공고:**")
         for message in prebid_updates:
-            await ctx.send(message)
+            await channel.send(message)
     else:
-        await ctx.send("해당 날짜의 새로운 사전 공고가 없습니다.")
+        await channel.send("해당 날짜의 새로운 사전 공고가 없습니다.")
     
     df_bids.to_csv("filtered_bids_data.csv", index=False, encoding='utf-8-sig')
     df_prebids.to_csv("filtered_prebids_data.csv", index=False, encoding='utf-8-sig')
+
+@bot.command(name='show')
+async def show(ctx, *, query: str):
+    if query.lower() == "new":
+        await show_updates(ctx.channel, datetime.date.today())
+    else:
+        specific_date = datetime.datetime.strptime(query, "%Y%m%d").date()
+        
+        # 필터링된 공고
+        bid_updates = []
+        prebid_updates = []
+
+        # Bid updates
+        df_bids = pd.read_csv("filtered_bids_data.csv")
+        df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt'], errors='coerce').dt.date
+        new_bids = df_bids[df_bids['bidNtceDt'] == specific_date]
+        for index, row in new_bids.iterrows():
+            msg = (
+                f"\n[{index + 1}] : 등록번호: {row['bidNtceNo']}\n"
+                f"{row['ntceInsttNm']}\n"
+                f"{row['bidNtceNm']}\n"
+                f"{row['presmptPrce']}원\n"
+                f"{row['bidNtceDt']}\n"
+                f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}"
+            )
+            bid_updates.append(msg)
+
+        # Prebid updates
+        df_prebids = pd.read_csv("filtered_prebids_data.csv")
+        df_prebids['rcptDt'] = pd.to_datetime(df_prebids['rcptDt'], errors='coerce').dt.date
+        new_prebids = df_prebids[df_prebids['rcptDt'] == specific_date]
+        for index, row in new_prebids.iterrows():
+            asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
+            msg = (
+                f"\n[{index + 1}] : 등록번호: {row['bfSpecRgstNo']}\n"
+                f"{row['orderInsttNm']}\n"
+                f"{row['prdctClsfcNoNm']}\n"
+                f"{asignBdgtAmt}\n"
+                f"{row['rcptDt']}\n"
+                f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={row['bfSpecRgstNo']}"
+            )
+            prebid_updates.append(msg)
+
+        if bid_updates:
+            await ctx.send("**해당 날짜의 입찰 공고:**")
+            for message in bid_updates:
+                await ctx.send(message)
+        else:
+            await ctx.send("해당 날짜의 새로운 입찰 공고가 없습니다.")
+
+        if prebid_updates:
+            await ctx.send("**해당 날짜의 사전 공고:**")
+            for message in prebid_updates:
+                await ctx.send(message)
+        else:
+            await ctx.send("해당 날짜의 새로운 사전 공고가 없습니다.")
     
 # Define the update task
 @tasks.loop(hours=24)  # Update data every 24 hours
