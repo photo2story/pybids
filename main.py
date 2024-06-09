@@ -226,6 +226,7 @@ async def show_updates(channel, specific_date):
 async def update_data_task():
     fetch_data_and_update("get_prebids.py")
     fetch_data_and_update("get_bids.py")
+    fetch_data_and_update("export_json.py")  # 추가: export_json.py 실행
     channel = bot.get_channel(int(CHANNEL_ID))
     if channel:
         today = datetime.date.today()
@@ -244,6 +245,7 @@ def fetch_data_and_update(script_name):
         print(f"An error occurred while executing {script_name}: {e}")
 
 bot.run(TOKEN)
+
 
 
 
