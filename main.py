@@ -159,6 +159,25 @@ async def show(ctx, date: str):
     
     df_bids.to_csv("filtered_bids_data.csv", index=False, encoding='utf-8-sig')
     df_prebids.to_csv("filtered_prebids_data.csv", index=False, encoding='utf-8-sig')
+    
+# Define the update task
+# Define the update task
+@tasks.loop(hours=24)  # Update data every 24 hours
+async def update_data_task():
+    fetch_data_and_update("get_prebids.py")
+    fetch_data_and_update("get_bids.py")
+    await send_daily_updates()
+
+def fetch_data_and_update(script_name):
+    try:
+        result = subprocess.run(['python', script_name], capture_output=True, text=True, encoding='utf-8')
+        if result.returncode == 0:
+            print(f"Script {script_name} executed successfully.")
+        else:
+            print(f"Script {script_name} failed with status code {result.returncode}.")
+    except Exception as e:
+        print(f"An error occurred while executing {script_name}: {e}")
+    
 
 bot.run(TOKEN)
 
