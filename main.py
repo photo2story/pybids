@@ -20,13 +20,15 @@ client = discord.Client(intents=intents)
 
 bot = commands.Bot(command_prefix='', intents=intents)
 
+# 시작하기 전에 데이터를 업데이트
 @bot.event
 async def on_ready():
     print(f'Bot이 성공적으로 로그인했습니다: {bot.user.name}')
     channel = bot.get_channel(int(CHANNEL_ID))
     if channel:
         await channel.send(f'Bot이 성공적으로 로그인했습니다: {bot.user.name}')
-        await channel.send("사용 가능한 명령어:\n- `bid <검색어>`: 공고 검색\n- `prebid <검색어>`: 사전 공고 검색\n- `show <YYYYMMDD>`: 특정 날짜의 새로운 공고 검색")
+        await channel.send("사용 가능한 명령어:\n- `bid <검색어>`: 공고 검색\n- `prebid <검색어>`: 사전 공고 검색\n- `show new`: 새로운 공고 알림\n- `show <YYYYMMDD>`: 특정 날짜의 새로운 공고 검색")
+    update_data_task.start()
 
 @bot.command(name='ping')
 async def ping(ctx):
@@ -161,12 +163,13 @@ async def show(ctx, date: str):
     df_prebids.to_csv("filtered_prebids_data.csv", index=False, encoding='utf-8-sig')
     
 # Define the update task
-# Define the update task
 @tasks.loop(hours=24)  # Update data every 24 hours
 async def update_data_task():
     fetch_data_and_update("get_prebids.py")
     fetch_data_and_update("get_bids.py")
-    await send_daily_updates()
+    channel = bot.get_channel(int(CHANNEL_ID))
+    if channel:
+        await show_updates(channel, datetime.date.today())
 
 def fetch_data_and_update(script_name):
     try:
@@ -177,9 +180,11 @@ def fetch_data_and_update(script_name):
             print(f"Script {script_name} failed with status code {result.returncode}.")
     except Exception as e:
         print(f"An error occurred while executing {script_name}: {e}")
-    
+
+
 
 bot.run(TOKEN)
+
 
 # .\\venv\\Scripts\\activate
 # python main.py
