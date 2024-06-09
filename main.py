@@ -6,6 +6,7 @@ import pandas as pd
 import discord
 from discord.ext import commands, tasks
 import datetime
+import subprocess
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
@@ -103,9 +104,18 @@ async def bid(ctx, *, query: str):
                 await ctx.send(message)
 
 @bot.command(name='show')
-async def show(ctx, date: str):
-    specific_date = datetime.datetime.strptime(date, "%Y%m%d").date()
-    
+async def show(ctx, *, query: str):
+    if query == "new":
+        today = datetime.date.today()
+        await show_updates(ctx, today)
+    else:
+        try:
+            specific_date = datetime.datetime.strptime(query, "%Y%m%d").date()
+            await show_updates(ctx, specific_date)
+        except ValueError:
+            await ctx.send("날짜 형식이 잘못되었습니다. YYYYMMDD 형식으로 입력해주세요.")
+
+async def show_updates(ctx, specific_date):
     # 필터링된 공고
     bid_updates = []
     prebid_updates = []
