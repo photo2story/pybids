@@ -66,7 +66,7 @@ def save_to_csv(data, file_path, columns):
     print(f"Data saved to {file_path}")
 
 if __name__ == "__main__":
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime('%Y%m%d') + '0000'
+    start_date = (datetime.datetime.now() - datetime.timedelta(days=4)).strftime('%Y%m%d') + '0000'
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
