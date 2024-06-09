@@ -247,7 +247,5 @@ def fetch_data_and_update(script_name):
 bot.run(TOKEN)
 
 
-
-
 # .\\venv\\Scripts\\activate
 # python main.py

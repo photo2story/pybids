@@ -59,7 +59,9 @@ def parse_xml(data):
 # 데이터 CSV로 저장
 def save_to_csv(data, file_path, columns):
     df = pd.DataFrame(data)
-    df = df[columns]
+    if 'sendOK' not in df.columns:
+        df['sendOK'] = 0
+    df = df[columns + ['sendOK']]
     df.to_csv(file_path, index=False, encoding='utf-8-sig')
     print(f"Data saved to {file_path}")
 
@@ -86,10 +88,15 @@ if __name__ == "__main__":
     
     if all_data:
         df_new = pd.DataFrame(all_data)
-        df_new = df_new[columns]  # 필요한 열만 선택
+        df_new['sendOK'] = 0  # 새로 추가된 항목의 sendOK는 0으로 설정
+        df_new = df_new[columns + ['sendOK']]  # 필요한 열만 선택
         
         if os.path.exists(file_path):
             df_existing = pd.read_csv(file_path)
+            if 'sendOK' not in df_existing.columns:
+                df_existing['sendOK'] = 0
+            df_existing = df_existing[columns + ['sendOK']]
+            
             total_fetched_ids = len(df_new)
             existing_ids = len(df_existing)
             common_ids = df_existing['bfSpecRgstNo'].isin(df_new['bfSpecRgstNo']).sum()
@@ -106,6 +113,7 @@ if __name__ == "__main__":
             save_to_csv(all_data, file_path, columns)
     else:
         print("No data found")
+
 
 
 # python get_prebids.py

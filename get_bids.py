@@ -15,14 +15,15 @@ keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안�
 
 # 데이터 가져오기
 def fetch_data(page_no, start_date, end_date, keyword):
-    base_url = "http://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getThngDetailMetaInfoServc"
+    base_url = "http://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoServc01"
     params = {
         'serviceKey': api_key,
         'pageNo': page_no,
         'numOfRows': 999,
+        'inqryDiv': 1,
         'inqryBgnDt': start_date,
         'inqryEndDt': end_date,
-        'bidNtceNm': keyword  # API가 키워드 필터링을 지원
+        'bidNtceNm': keyword
     }
     
     response = requests.get(base_url, params=params)
@@ -30,6 +31,7 @@ def fetch_data(page_no, start_date, end_date, keyword):
         return response.content
     else:
         print(f"Failed to fetch data: {response.status_code}")
+        print("Response content:", response.text)
         return None
 
 # XML 데이터 파싱
@@ -59,12 +61,14 @@ def parse_xml(data):
 # 데이터 CSV로 저장
 def save_to_csv(data, file_path, columns):
     df = pd.DataFrame(data)
-    df = df[columns]
+    if 'sendOK' not in df.columns:
+        df['sendOK'] = 0
+    df = df[columns + ['sendOK']]
     df.to_csv(file_path, index=False, encoding='utf-8-sig')
     print(f"Data saved to {file_path}")
 
 if __name__ == "__main__":
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime('%Y%m%d') + '0000'
+    start_date = (datetime.datetime.now() - datetime.timedelta(days=4)).strftime('%Y%m%d') + '0000'
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
@@ -86,10 +90,15 @@ if __name__ == "__main__":
     
     if all_data:
         df_new = pd.DataFrame(all_data)
-        df_new = df_new[columns]  # 필요한 열만 선택
+        df_new['sendOK'] = 0  # 새로 추가된 항목의 sendOK는 0으로 설정
+        df_new = df_new[columns + ['sendOK']]  # 필요한 열만 선택
         
         if os.path.exists(file_path):
             df_existing = pd.read_csv(file_path)
+            if 'sendOK' not in df_existing.columns:
+                df_existing['sendOK'] = 0
+            df_existing = df_existing[columns + ['sendOK']]
+            
             total_fetched_ids = len(df_new)
             existing_ids = len(df_existing)
             common_ids = df_existing['bidNtceNo'].isin(df_new['bidNtceNo']).sum()
@@ -106,6 +115,5 @@ if __name__ == "__main__":
             save_to_csv(all_data, file_path, columns)
     else:
         print("No data found")
-
 
 # python get_bids.py
