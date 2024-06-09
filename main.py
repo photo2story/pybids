@@ -88,7 +88,10 @@ async def bid(ctx, *, query: str):
         else:
             messages = []
             for index, row in filtered_df.iterrows():
-                presmptPrce = f"{int(row['presmptPrce']):,}원" if pd.notnull(row['presmptPrce']) else "정보 없음"
+                try:
+                    presmptPrce = f"{int(row['presmptPrce']):,}원" if pd.notnull(row['presmptPrce']) else "정보 없음"
+                except KeyError:
+                    presmptPrce = "정보 없음"
                 msg = (
                     f"\n[{index + 1}]\n"
                     f"\n등록번호: {row['bidNtceNo']}\n"
@@ -102,6 +105,7 @@ async def bid(ctx, *, query: str):
 
             for message in messages:
                 await ctx.send(message)
+
 
 
 async def show_updates(channel, specific_date):
