@@ -68,7 +68,7 @@ def save_to_csv(data, file_path, columns):
     print(f"Data saved to {file_path}")
 
 if __name__ == "__main__":
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=4)).strftime('%Y%m%d') + '0000'
+    start_date = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime('%Y%m%d') + '0000'
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         df_new = pd.DataFrame(all_data)
         df_new['sendOK'] = 0  # 새로 추가된 항목의 sendOK는 0으로 설정
         df_new = df_new[columns + ['sendOK']]  # 필요한 열만 선택
-        
+
         if os.path.exists(file_path):
             df_existing = pd.read_csv(file_path)
             if 'sendOK' not in df_existing.columns:
@@ -113,7 +113,13 @@ if __name__ == "__main__":
             merged_df.to_csv(file_path, index=False, encoding='utf-8-sig')
         else:
             save_to_csv(all_data, file_path, columns)
+
+        # 필터링된 데이터 저장
+        keyword_pattern = '|'.join(keywords)
+        filtered_df = df_new[df_new['bidNtceNm'].str.contains(keyword_pattern, na=False)]
+        save_to_csv(filtered_df, 'filtered_bids_data.csv', columns)
     else:
         print("No data found")
+
 
 # python get_bids.py

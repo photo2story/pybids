@@ -111,9 +111,13 @@ if __name__ == "__main__":
             merged_df.to_csv(file_path, index=False, encoding='utf-8-sig')
         else:
             save_to_csv(all_data, file_path, columns)
+
+        # 필터링된 데이터 저장
+        keyword_pattern = '|'.join(keywords)
+        filtered_df = df_new[df_new['prdctClsfcNoNm'].str.contains(keyword_pattern, na=False)]
+        save_to_csv(filtered_df, 'filtered_prebids_data.csv', columns)
     else:
         print("No data found")
-
 
 
 # python get_prebids.py
