@@ -1,6 +1,5 @@
 import pandas as pd
 import json
-import datetime
 
 def csv_to_json(bids_csv_file, prebids_csv_file, bids_today_csv_file, json_file_path):
     # CSV 파일을 읽어 DataFrame으로 변환
@@ -16,7 +15,7 @@ def csv_to_json(bids_csv_file, prebids_csv_file, bids_today_csv_file, json_file_
     # 필요한 열만 선택
     bids_df = bids_df[['bidNtceDt', 'bidNtceNm']]
     prebids_df = prebids_df[['rcptDt', 'prdctClsfcNoNm']]
-    bids_today_df = bids_today_df[['rlOpengDt', 'bidNtceNm']]
+    bids_today_df = bids_today_df[['rlOpengDt', 'bidNtceNm', 'opengCorpInfo']]
 
     # DataFrame을 딕셔너리로 변환
     bids_data = bids_df.to_dict(orient='records')
