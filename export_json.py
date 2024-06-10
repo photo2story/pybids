@@ -45,6 +45,3 @@ csv_to_json(bids_csv_file, prebids_csv_file, bids_today_csv_file, json_file_path
 print(f"Data successfully exported to {json_file_path}")
 
 # python export_json.py
-
-
-# python export_json.py
