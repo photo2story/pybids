@@ -4,11 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const bidsSection = document.getElementById('bids-section');
     const prebidsSection = document.getElementById('prebids-section');
 
-    // 현재 날짜를 yyyy-mm-dd 형식으로 포맷
     const today = new Date().toISOString().split('T')[0];
     dateInput.value = today;
 
-    // 페이지 로드 시 오늘 날짜의 데이터 로드
     loadAndDisplayData(today);
 
     dateInput.addEventListener('change', () => {
@@ -20,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                console.log('Fetched data:', data); // 데이터 로드 확인을 위한 로그
+                console.log('Fetched data:', data); // 데이터 로드 확인 로그
                 const bidsToday = data.bidwins.filter(bid => bid.opengDt && bid.opengDt.split(' ')[0] === date);
                 const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
                 const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
@@ -48,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
