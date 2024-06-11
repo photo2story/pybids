@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                console.log('Fetched data:', data);  // 데이터를 콘솔에 출력
+                console.log('Fetched data:', data); // 추가된 로그
                 const bidsToday = data.bidwins.filter(bid => bid.opengDt && bid.opengDt.split(' ')[0] === date);
                 const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
                 const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
@@ -44,8 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-
 
 
 
