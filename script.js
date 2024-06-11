@@ -18,19 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadAndDisplayData(date) {
         fetch('data.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 console.log('Fetched data:', data);  // 데이터를 콘솔에 출력
-                const bidsToday = data.bidwins.filter(bid => bid.rlOpengDt && bid.rlOpengDt.split(' ')[0] === date);
+                const bidsToday = data.bidwins.filter(bid => bid.opengDt && bid.opengDt.split(' ')[0] === date);
                 const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
                 const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
 
-                displayData(bidsToday, bidsTodaySection, 'bidNtceNm', 'rlOpengDt', 'bidwinnrNm');
+                displayData(bidsToday, bidsTodaySection, 'bidNtceNm', 'opengDt', 'opengCorpInfo');
                 displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt');
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt');
             })
