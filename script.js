@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('date');
+    const bidsTodaySection = document.getElementById('bids-today-section');
     const bidsSection = document.getElementById('bids-section');
     const prebidsSection = document.getElementById('prebids-section');
-    const bidsTodaySection = document.getElementById('bids-today-section');
 
     // 현재 날짜를 yyyy-mm-dd 형식으로 포맷
     const today = new Date().toISOString().split('T')[0];
@@ -20,27 +20,29 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
+                const bidsToday = data.bids_today.filter(bid => bid.rlOpengDt && bid.rlOpengDt.split(' ')[0] === date);
                 const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
                 const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
-                const bids_today = data.bids_today.filter(bid => bid.rlOpengDt && bid.rlOpengDt.split(' ')[0] === date);
 
+                displayData(bidsToday, bidsTodaySection, 'bidNtceNm', 'rlOpengDt', 'opengCorpInfo');
                 displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt');
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt');
-                displayData(bids_today, bidsTodaySection, 'bidNtceNm', 'rlOpengDt');
             })
             .catch(error => console.error('Error loading data:', error));
     }
 
-    function displayData(items, container, key, dateKey) {
+    function displayData(items, container, key, dateKey, extraKey = null) {
         container.innerHTML = '';
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
             const date = item[dateKey] ? item[dateKey].split(' ')[0] : ''; // 날짜만 추출, 날짜가 없을 경우 빈 문자열
-            task.innerHTML = `<span>${date} ${item[key]}</span><input type="checkbox">`;
+            let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
+            task.innerHTML = `<span>${date} ${item[key]}${extraInfo}</span><input type="checkbox">`;
             container.appendChild(task);
         });
     }
 });
+
 
 
