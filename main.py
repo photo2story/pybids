@@ -2,11 +2,11 @@
 
 import os
 from dotenv import load_dotenv
-import pandas as pd
 import discord
 from discord.ext import commands, tasks
 import datetime
 import subprocess
+from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
@@ -110,7 +110,7 @@ async def bid(ctx, *, query: str):
 async def bid_win(ctx):
     df = pd.read_csv("filtered_bidwin_data.csv")
     today_date = datetime.datetime.now().strftime('%Y-%m-%d')
-    filtered_df = df[df['rlOpengDt'].str.startswith(today_date)]
+    filtered_df = df[df['opengDt'].str.startswith(today_date)]
     filtered_df = filtered_df[filtered_df['opengCorpInfo'].str.contains('수성엔지니어링')]
 
     if filtered_df.empty:
@@ -127,7 +127,7 @@ async def bid_win(ctx):
                 f"\n입찰공고번호: {row['bidNtceNo']}\n"
                 f"입찰공고명: {row['bidNtceNm']}\n"
                 f"낙찰금액: {sucsfbidAmt}\n"
-                f"개찰일시: {row['rlOpengDt']}\n"
+                f"개찰일시: {row['opengDt']}\n"
                 f"낙찰자: {row['opengCorpInfo']}\n"
             )
             messages.append(msg)
@@ -144,56 +144,9 @@ async def show(ctx, *, query: str):
         await show_date(ctx.channel, specific_date)
 
 async def show_date(channel, specific_date):
-    bid_updates = []
-    prebid_updates = []
-    bidwin_updates = []
-
-    # Bid updates
-    df_bids = pd.read_csv("filtered_bids_data.csv")
-    df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt'], errors='coerce').dt.date
-    bids = df_bids[df_bids['bidNtceDt'] == specific_date]
-    for index, row in bids.iterrows():
-        presmptPrce = f"{int(row['presmptPrce']):,}원" if pd.notnull(row['presmptPrce']) else "정보 없음"
-        msg = (
-            f"\n[{index + 1}] : 등록번호: {row['bidNtceNo']}\n"
-            f"{row['ntceInsttNm']}\n"
-            f"{row['bidNtceNm']}\n"
-            f"{presmptPrce}\n"
-            f"{row['bidNtceDt']}\n"
-            f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}"
-        )
-        bid_updates.append(msg)
-
-    # Prebid updates
-    df_prebids = pd.read_csv("filtered_prebids_data.csv")
-    df_prebids['rcptDt'] = pd.to_datetime(df_prebids['rcptDt'], errors='coerce').dt.date
-    prebids = df_prebids[df_prebids['rcptDt'] == specific_date]
-    for index, row in prebids.iterrows():
-        asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원" if pd.notnull(row['asignBdgtAmt']) else "정보 없음"
-        msg = (
-            f"\n[{index + 1}] : 등록번호: {row['bfSpecRgstNo']}\n"
-            f"{row['orderInsttNm']}\n"
-            f"{row['prdctClsfcNoNm']}\n"
-            f"{asignBdgtAmt}\n"
-            f"{row['rcptDt']}\n"
-            f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={row['bfSpecRgstNo']}"
-        )
-        prebid_updates.append(msg)
-
-    # Bid win updates
-    df_bidwin = pd.read_csv("filtered_bidwin_data.csv")
-    df_bidwin['rlOpengDt'] = pd.to_datetime(df_bidwin['rlOpengDt'], errors='coerce').dt.date
-    bidwins = df_bidwin[df_bidwin['rlOpengDt'] == specific_date]
-    for index, row in bidwins.iterrows():
-        sucsfbidAmt = f"{int(row['sucsfbidAmt']):,}원" if pd.notnull(row['sucsfbidAmt']) else "정보 없음"
-        msg = (
-            f"\n[{index + 1}] : 입찰공고번호: {row['bidNtceNo']}\n"
-            f"입찰공고명: {row['bidNtceNm']}\n"
-            f"낙찰금액: {sucsfbidAmt}\n"
-            f"개찰일시: {row['rlOpengDt']}\n"
-            f"낙찰자: {row['opengCorpInfo']}\n"
-        )
-        bidwin_updates.append(msg)
+    bid_updates = get_bid_updates(specific_date)
+    prebid_updates = get_prebid_updates(specific_date)
+    bidwin_updates = get_bidwin_updates(specific_date)
 
     if bid_updates:
         await channel.send("**해당 날짜의 입찰 공고:**")
@@ -217,62 +170,9 @@ async def show_date(channel, specific_date):
         await channel.send("해당 날짜의 새로운 낙찰 정보가 없습니다.")
 
 async def show_updates(channel, specific_date):
-    bid_updates = []
-    prebid_updates = []
-    bidwin_updates = []
-
-    # Bid updates
-    df_bids = pd.read_csv("filtered_bids_data.csv")
-    df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt'], errors='coerce').dt.date
-    df_bids['sendOK'] = df_bids['sendOK'].fillna(0)
-    new_bids = df_bids[(df_bids['bidNtceDt'] == specific_date) & (df_bids['sendOK'] == 0)]
-    for index, row in new_bids.iterrows():
-        presmptPrce = f"{int(row['presmptPrce']):,}원" if pd.notnull(row['presmptPrce']) else "정보 없음"
-        msg = (
-            f"\n[{index + 1}] : 등록번호: {row['bidNtceNo']}\n"
-            f"{row['ntceInsttNm']}\n"
-            f"{row['bidNtceNm']}\n"
-            f"{presmptPrce}\n"
-            f"{row['bidNtceDt']}\n"
-            f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}"
-        )
-        bid_updates.append(msg)
-        df_bids.loc[df_bids['bidNtceNo'] == row['bidNtceNo'], 'sendOK'] = 1
-
-    # Prebid updates
-    df_prebids = pd.read_csv("filtered_prebids_data.csv")
-    df_prebids['rcptDt'] = pd.to_datetime(df_prebids['rcptDt'], errors='coerce').dt.date
-    df_prebids['sendOK'] = df_prebids['sendOK'].fillna(0)
-    new_prebids = df_prebids[(df_prebids['rcptDt'] == specific_date) & (df_prebids['sendOK'] == 0)]
-    for index, row in new_prebids.iterrows():
-        asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원" if pd.notnull(row['asignBdgtAmt']) else "정보 없음"
-        msg = (
-            f"\n[{index + 1}] : 등록번호: {row['bfSpecRgstNo']}\n"
-            f"{row['orderInsttNm']}\n"
-            f"{row['prdctClsfcNoNm']}\n"
-            f"{asignBdgtAmt}\n"
-            f"{row['rcptDt']}\n"
-            f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={row['bfSpecRgstNo']}"
-        )
-        prebid_updates.append(msg)
-        df_prebids.loc[df_prebids['bfSpecRgstNo'] == row['bfSpecRgstNo'], 'sendOK'] = 1
-
-    # Bid win updates
-    df_bidwin = pd.read_csv("filtered_bidwin_data.csv")
-    df_bidwin['rlOpengDt'] = pd.to_datetime(df_bidwin['rlOpengDt'], errors='coerce').dt.date
-    df_bidwin['sendOK'] = df_bidwin['sendOK'].fillna(0)
-    new_bidwins = df_bidwin[(df_bidwin['rlOpengDt'] == specific_date) & (df_bidwin['sendOK'] == 0)]
-    for index, row in new_bidwins.iterrows():
-        sucsfbidAmt = f"{int(row['sucsfbidAmt']):,}원" if pd.notnull(row['sucsfbidAmt']) else "정보 없음"
-        msg = (
-            f"\n[{index + 1}] : 입찰공고번호: {row['bidNtceNo']}\n"
-            f"입찰공고명: {row['bidNtceNm']}\n"
-            f"낙찰금액: {sucsfbidAmt}\n"
-            f"개찰일시: {row['rlOpengDt']}\n"
-            f"낙찰자: {row['opengCorpInfo']}\n"
-        )
-        bidwin_updates.append(msg)
-        df_bidwin.loc[df_bidwin['bidNtceNo'] == row['bidNtceNo'], 'sendOK'] = 1
+    bid_updates = get_bid_updates(specific_date, new_only=True)
+    prebid_updates = get_prebid_updates(specific_date, new_only=True)
+    bidwin_updates = get_bidwin_updates(specific_date, new_only=True)
 
     if bid_updates:
         await channel.send("**오늘의 입찰 공고:**")
@@ -295,17 +195,23 @@ async def show_updates(channel, specific_date):
     else:
         await channel.send("오늘의 새로운 낙찰 정보가 없습니다.")
     
-    df_bids.to_csv("filtered_bids_data.csv", index=False, encoding='utf-8-sig')
-    df_prebids.to_csv("filtered_prebids_data.csv", index=False, encoding='utf-8-sig')
-    df_bidwin.to_csv("filtered_bidwin_data.csv", index=False, encoding='utf-8-sig')
+    save_updated_dataframes()
+    
+import concurrent.futures
 
 # Define the update task
 @tasks.loop(hours=24)  # Update data every 24 hours
 async def update_data_task():
-    fetch_data_and_update("get_prebids.py")
-    fetch_data_and_update("get_bids.py")
-    fetch_data_and_update("get_bidwin.py")  # 추가: get_bidwin.py 실행
-    fetch_data_and_update("export_json.py")  # 추가: export_json.py 실행
+    scripts = ["get_prebids.py", "get_bids.py", "get_bidwin.py", "export_json.py"]
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(fetch_data_and_update, script) for script in scripts]
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
     channel = bot.get_channel(int(CHANNEL_ID))
     if channel:
         today = datetime.date.today()
@@ -313,19 +219,22 @@ async def update_data_task():
         await show_updates(channel, today)
         await show_updates(channel, yesterday)
 
+
 def fetch_data_and_update(script_name):
     try:
-        result = subprocess.run(['python', script_name], capture_output=True, text=True, encoding='utf-8')
+        # 가상환경의 Python 경로를 가져옵니다.
+        venv_python = os.path.join(os.environ['VIRTUAL_ENV'], 'Scripts', 'python.exe')
+        result = subprocess.run([venv_python, script_name], capture_output=True, text=True, encoding='utf-8')
         if result.returncode == 0:
             print(f"Script {script_name} executed successfully.")
         else:
-            print(f"Script {script_name} failed with status code {result.returncode}.")
+            print(f"Script {script_name} failed with status code {result.returncode}. Error: {result.stderr}")
     except Exception as e:
         print(f"An error occurred while executing {script_name}: {e}")
 
+
+
 bot.run(TOKEN)
-
-
 
 
 # .\\venv\\Scripts\\activate
