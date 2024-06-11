@@ -1,3 +1,5 @@
+# export_json.py
+
 import pandas as pd
 import json
 
@@ -10,12 +12,12 @@ def csv_to_json(bids_csv_file, prebids_csv_file, bidwin_csv_file, json_file_path
     # 날짜와 품명이 있는 데이터만 필터링
     bids_df = bids_df.dropna(subset=['bidNtceDt', 'bidNtceNm'])
     prebids_df = prebids_df.dropna(subset=['rcptDt', 'prdctClsfcNoNm'])
-    bidwin_df = bidwin_df.dropna(subset=['rlOpengDt', 'bidNtceNm'])
+    bidwin_df = bidwin_df.dropna(subset=['opengDt', 'bidNtceNm', 'opengCorpInfo'])
 
     # 필요한 열만 선택
     bids_df = bids_df[['bidNtceDt', 'bidNtceNm']]
     prebids_df = prebids_df[['rcptDt', 'prdctClsfcNoNm']]
-    bidwin_df = bidwin_df[['rlOpengDt', 'bidNtceNm', 'bidwinnrNm']]
+    bidwin_df = bidwin_df[['opengDt', 'bidNtceNm', 'opengCorpInfo']]
 
     # DataFrame을 딕셔너리로 변환
     bids_data = bids_df.to_dict(orient='records')

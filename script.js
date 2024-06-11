@@ -20,11 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                const bidsToday = data.bids_today.filter(bid => bid.rlOpengDt && bid.rlOpengDt.split(' ')[0] === date);
+                const bidsToday = data.bidwins.filter(bid => bid.rlOpengDt && bid.rlOpengDt.split(' ')[0] === date);
                 const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
                 const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
 
-                displayData(bidsToday, bidsTodaySection, 'bidNtceNm', 'rlOpengDt', 'opengCorpInfo');
+                displayData(bidsToday, bidsTodaySection, 'bidNtceNm', 'rlOpengDt', 'bidwinnrNm');
                 displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt');
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt');
             })
@@ -43,6 +43,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
 
 
