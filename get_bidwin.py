@@ -1,33 +1,39 @@
 # get_bidwin.py
 import os
 from dotenv import load_dotenv
-import requests
+import subprocess
 import pandas as pd
 import datetime
+import json
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
-# 데이터 가져오기
-def fetch_data(page_no, start_date, end_date):
+# cURL 명령어 실행
+def fetch_data_with_curl(page_no, start_date, end_date):
     base_url = "https://apis.data.go.kr/1230000/ScsbidInfoService/getOpengResultListInfoServc"
     params = {
         'serviceKey': api_key,
         'pageNo': page_no,
         'numOfRows': 999,
         'type': 'json',
-        'inqryDiv': 1,
+        'inqryDiv': '1',
         'inqryBgnDt': start_date,
         'inqryEndDt': end_date
     }
+    query_string = '&'.join([f"{key}={value}" for key, value in params.items()])
+    url = f"{base_url}?{query_string}"
     
-    response = requests.get(base_url, params=params)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Failed to fetch data: {response.status_code}")
-        return None
+    try:
+        result = subprocess.run(['curl', '-k', url], capture_output=True, text=True, encoding='utf-8')
+        if result.returncode == 0:
+            return json.loads(result.stdout)
+        else:
+            print("Failed to connect.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    return None
 
 # 데이터 CSV로 저장
 def save_to_csv(data, file_path, columns):
@@ -37,7 +43,7 @@ def save_to_csv(data, file_path, columns):
     print(f"Filtered data saved to {file_path}")
 
 if __name__ == "__main__":
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=3)).strftime('%Y%m%d') + '0000'
+    start_date = (datetime.datetime.now() - datetime.timedelta(days=6)).strftime('%Y%m%d') + '0000'
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
@@ -45,7 +51,7 @@ if __name__ == "__main__":
     target_company = "수성엔지니어링"
     
     while True:
-        data = fetch_data(page_no, start_date, end_date)
+        data = fetch_data_with_curl(page_no, start_date, end_date)
         if data:
             try:
                 items = data.get('response', {}).get('body', {}).get('items', [])
