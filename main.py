@@ -202,37 +202,73 @@ import concurrent.futures
 # Define the update task
 @tasks.loop(hours=24)  # Update data every 24 hours
 async def update_data_task():
-    scripts = ["get_prebids.py", "get_bids.py", "get_bidwin.py", "export_json.py"]
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(fetch_data_and_update, script) for script in scripts]
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                future.result()
-            except Exception as e:
-                print(f"An error occurred: {e}")
-
-    channel = bot.get_channel(int(CHANNEL_ID))
-    if channel:
-        today = datetime.date.today()
-        yesterday = today - datetime.timedelta(days=1)
-        await show_updates(channel, today)
-        await show_updates(channel, yesterday)
-
+    fetch_data_and_update("get_prebids.py")
+    fetch_data_and_update("get_bids.py")
+    await send_daily_updates()
 
 def fetch_data_and_update(script_name):
     try:
-        # 가상환경의 Python 경로를 가져옵니다.
-        venv_python = os.path.join(os.environ['VIRTUAL_ENV'], 'Scripts', 'python.exe')
-        result = subprocess.run([venv_python, script_name], capture_output=True, text=True, encoding='utf-8')
+        result = subprocess.run(['python', script_name], capture_output=True, text=True, encoding='utf-8')
         if result.returncode == 0:
             print(f"Script {script_name} executed successfully.")
         else:
-            print(f"Script {script_name} failed with status code {result.returncode}. Error: {result.stderr}")
+            print(f"Script {script_name} failed with status code {result.returncode}.")
     except Exception as e:
         print(f"An error occurred while executing {script_name}: {e}")
 
+async def send_daily_updates():
+    channel = bot.get_channel(int(CHANNEL_ID))
+    specific_date_str = "20240607"  # 특정 날짜로 설정
+    specific_date = datetime.datetime.strptime(specific_date_str, "%Y%m%d").date()
+    
+    # 필터링된 공고
+    bid_updates = []
+    prebid_updates = []
 
+    # Bid updates
+    df_bids = pd.read_csv("filtered_bids_data.csv")
+    df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt']).dt.date
+    new_bids = df_bids[df_bids['bidNtceDt'] == specific_date]
+    for index, row in new_bids.iterrows():
+        msg = (
+            f"\n[{index + 1}] : 등록번호: {row['bidNtceNo']}\n"
+            f"{row['ntceInsttNm']}\n"
+            f"{row['bidNtceNm']}\n"
+            f"{row['presmptPrce']}원\n"
+            f"{row['bidNtceDt']}\n"
+            f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}"
+        )
+        bid_updates.append(msg)
+
+    # Prebid updates
+    df_prebids = pd.read_csv("filtered_prebids_data.csv")
+    df_prebids['rcptDt'] = pd.to_datetime(df_prebids['rcptDt']).dt.date
+    new_prebids = df_prebids[df_prebids['rcptDt'] == specific_date]
+    for index, row in new_prebids.iterrows():
+        asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
+        msg = (
+            f"\n[{index + 1}] : 등록번호: {row['bfSpecRgstNo']}\n"
+            f"{row['orderInsttNm']}\n"
+            f"{row['prdctClsfcNoNm']}\n"
+            f"{asignBdgtAmt}\n"
+            f"{row['rcptDt']}\n"
+            f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={row['bfSpecRgstNo']}"
+        )
+        prebid_updates.append(msg)
+
+    if bid_updates:
+        await channel.send("**오늘의 입찰 공고:**")
+        for message in bid_updates:
+            await channel.send(message)
+    else:
+        await channel.send("오늘의 새로운 입찰 공고가 없습니다.")
+
+    if prebid_updates:
+        await channel.send("**오늘의 사전 공고:**")
+        for message in prebid_updates:
+            await channel.send(message)
+    else:
+        await channel.send("오늘의 새로운 사전 공고가 없습니다.")
 
 bot.run(TOKEN)
 
