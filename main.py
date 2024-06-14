@@ -10,7 +10,7 @@ import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 
 # 환경 변수에서 API 키를 로드
-load_dotenv()
+# load_dotenv()
 
 # Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
