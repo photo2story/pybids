@@ -1,57 +1,47 @@
 # get_bids.py
+# get_bids.py
 import os
 from dotenv import load_dotenv
-import requests
+import subprocess
+import json
 import pandas as pd
 import datetime
-from xml.etree import ElementTree as ET
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
+# 키워드 리스트
+keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량", "제안", "공모"]
+
 # 데이터 가져오기
-def fetch_data(page_no, start_date, end_date):
-    base_url = "http://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoServc"
+def fetch_data_with_curl(page_no, start_date, end_date):
+    base_url = "http://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoServc01"
     params = {
         'serviceKey': api_key,
-        'pageNo': page_no,
-        'numOfRows': 999,
-        'inqryBgnDt': start_date,
-        'inqryEndDt': end_date
+        "numOfRows": 999,
+        "pageNo": page_no,
+        "inqryDiv": "1",
+        "inqryBgnDt": start_date,
+        "inqryEndDt": end_date,
+        "type": "json"
     }
     
-    response = requests.get(base_url, params=params)
-    if response.status_code == 200:
-        return response.content
-    else:
-        print(f"Failed to fetch data: {response.status_code}")
-        print(f"Response content: {response.content}")
-        return None
-
-# XML 데이터 파싱
-def parse_xml(data):
-    root = ET.fromstring(data)
-    body = root.find('.//body')
-    if body is None:
-        return []
+    query_string = '&'.join([f"{key}={value}" for key, value in params.items()])
+    url = f"{base_url}?{query_string}"
     
-    items = body.find('.//items')
-    if items is None:
-        return []
-    
-    item_list = []
-    for item in items.findall('.//item'):
-        item_data = {
-            'bidNtceNo': item.find('bidNtceNo').text if item.find('bidNtceNo') is not None else '',
-            'ntceInsttNm': item.find('ntceInsttNm').text if item.find('ntceInsttNm') is not None else '',
-            'bidNtceNm': item.find('bidNtceNm').text if item.find('bidNtceNm') is not None else '',
-            'presmptPrce': item.find('presmptPrce').text if item.find('presmptPrce') is not None else '',
-            'bidNtceDt': item.find('bidNtceDt').text if item.find('bidNtceDt') is not None else ''
-        }
-        item_list.append(item_data)
-        
-    return item_list
+    try:
+        result = subprocess.run(['curl', '-k', url], capture_output=True, text=True, encoding='utf-8')
+        if result.returncode == 0:
+            if result.stdout.strip().startswith('{'):
+                return json.loads(result.stdout)
+            else:
+                print(f"Unexpected response format: {result.stdout}")
+        else:
+            print(f"Failed to connect. Status code: {result.returncode}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    return None
 
 # 데이터 CSV로 저장
 def save_to_csv(data, file_path, columns):
@@ -65,14 +55,14 @@ if __name__ == "__main__":
     end_date = datetime.datetime.now().strftime('%Y%m%d') + '2359'
     
     all_data = []
+    page_no = 1
     columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
     file_path = "filtered_bids_data.csv"
-    page_no = 1
     
     while True:
-        data = fetch_data(page_no, start_date, end_date)
+        data = fetch_data_with_curl(page_no, start_date, end_date)
         if data:
-            items = parse_xml(data)
+            items = data.get('response', {}).get('body', {}).get('items', [])
             if not items:
                 break
             all_data.extend(items)
@@ -96,6 +86,11 @@ if __name__ == "__main__":
             merged_df.to_csv(file_path, index=False, encoding='utf-8-sig')
         else:
             save_to_csv(df_new, file_path, columns)
+            
+        # 필터링된 데이터 저장
+        keyword_pattern = '|'.join(keywords)
+        filtered_df = df_new[df_new['bidNtceNm'].str.contains(keyword_pattern, na=False)]
+        save_to_csv(filtered_df, 'filtered_bids_data.csv', columns)            
     else:
         print("No data found")
 
