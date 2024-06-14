@@ -1,11 +1,14 @@
 # get_bidwin.py
+
 import os
 from dotenv import load_dotenv
 import subprocess
 import pandas as pd
 import datetime
 import json
-
+# 가상 환경 경로를 추가합니다.
+venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
+sys.path.append(venv_path)
 # 환경 변수에서 API 키를 로드
 load_dotenv()
 api_key = os.getenv('BID_API_KEY')

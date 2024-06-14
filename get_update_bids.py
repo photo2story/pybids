@@ -2,7 +2,10 @@
 
 import pandas as pd
 import datetime
-
+import os
+# 가상 환경 경로를 추가합니다.
+venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
+sys.path.append(venv_path)
 def get_bid_updates(specific_date, new_only=False):
     df_bids = pd.read_csv("filtered_bids_data.csv")
     df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt'], errors='coerce').dt.date

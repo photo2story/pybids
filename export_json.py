@@ -2,6 +2,10 @@
 
 import pandas as pd
 import json
+import os
+# 가상 환경 경로를 추가합니다.
+venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
+sys.path.append(venv_path)
 
 def csv_to_json(bids_csv_file, prebids_csv_file, bidwin_csv_file, json_file_path):
     # CSV 파일을 읽어 DataFrame으로 변환
