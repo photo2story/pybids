@@ -11,20 +11,20 @@ import sys
 # venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
 # sys.path.append(venv_path)
 # 환경 변수에서 API 키를 로드
-# load_dotenv()
-api_key = os.getenv('PREBID_API_KEY')
+load_dotenv()
+api_key = os.getenv('BID_API_KEY')
 
 # cURL 명령어 실행
 def fetch_data_with_curl(page_no, start_date, end_date):
-    base_url = "https://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getPublicPrcureThngInfoServc"
+    base_url = "http://apis.data.go.kr/1230000/HrcspSsstndrdInfoService/getPublicPrcureThngInfoServc"
     params = {
         'serviceKey': api_key,
         'pageNo': page_no,
         'numOfRows': 999,
-        'type': 'json',
         'inqryDiv': '1',
         'inqryBgnDt': start_date,
-        'inqryEndDt': end_date
+        'inqryEndDt': end_date,
+        'type': 'json'
     }
     query_string = '&'.join([f"{key}={value}" for key, value in params.items()])
     url = f"{base_url}?{query_string}"
