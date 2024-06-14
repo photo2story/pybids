@@ -203,9 +203,23 @@ import concurrent.futures
 # Define the update task
 @tasks.loop(hours=24)  # Update data every 24 hours
 async def update_data_task():
-    fetch_data_and_update("get_prebids.py")
-    fetch_data_and_update("get_bids.py")
-    await send_daily_updates()
+    scripts = ["get_prebids.py", "get_bids.py", "get_bidwin.py", "export_json.py"]
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(fetch_data_and_update, script) for script in scripts]
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+    channel = bot.get_channel(int(CHANNEL_ID))
+    if channel:
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(days=1)
+        await show_updates(channel, today)
+        await show_updates(channel, yesterday)
+
 
 def fetch_data_and_update(script_name):
     try:
