@@ -30,7 +30,10 @@ async def on_ready():
     if channel:
         await channel.send(f'Bot이 성공적으로 로그인했습니다: {bot.user.name}')
         await channel.send("사용 가능한 명령어:\n- `bid <검색어>`: 공고 검색\n- `prebid <검색어>`: 사전 공고 검색\n- `bid win`: 오늘의 낙찰자\n- `show new`: 새로운 공고 알림\n- `show <YYYYMMDD>`: 특정 날짜의 새로운 공고 검색")
-    update_data_task.start()
+    
+    if not update_data_task.is_running():
+        update_data_task.start()
+
 
 @bot.command(name='ping')
 async def ping(ctx):
