@@ -6,6 +6,7 @@ import subprocess
 import pandas as pd
 import datetime
 import json
+import sys
 # 가상 환경 경로를 추가합니다.
 venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
 sys.path.append(venv_path)
