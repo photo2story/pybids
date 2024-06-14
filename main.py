@@ -296,5 +296,5 @@ async def send_daily_updates():
 bot.run(TOKEN)
 
 
-# .\\venv\\Scripts\\activate
+# .\\.venv\\Scripts\\activate
 # python main.py

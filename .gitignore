@@ -13,11 +13,14 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 ENV/
 ENV.*/
 venv.*/
+.venv.*/
 # Ignore virtual environment files
 myenv/
+.venv/
 .env
 *.png
 # *.csv
