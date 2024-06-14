@@ -235,6 +235,7 @@ def fetch_data_and_update(script_name):
             print(f"Script {script_name} executed successfully.")
         else:
             print(f"Script {script_name} failed with status code {result.returncode}.")
+            print(f"Error message: {result.stderr}")
     except Exception as e:
         print(f"An error occurred while executing {script_name}: {e}")
 
