@@ -1,7 +1,7 @@
 # get_bids.py
 
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import subprocess
 import json
 import pandas as pd

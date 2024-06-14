@@ -1,9 +1,9 @@
 # get_bidwin.py
 
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import subprocess
-import pandas as pd
+# import pandas as pd
 import datetime
 import json
 import sys
