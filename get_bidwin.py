@@ -1,9 +1,9 @@
 # get_bidwin.py
 
 import os
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 import subprocess
-# import pandas as pd
+import pandas as pd
 import datetime
 import json
 import sys
@@ -11,7 +11,7 @@ import sys
 # venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
 # sys.path.append(venv_path)
 # 환경 변수에서 API 키를 로드
-# load_dotenv()
+load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
 # cURL 명령어 실행

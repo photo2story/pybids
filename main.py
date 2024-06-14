@@ -8,6 +8,9 @@ from discord.ext import commands, tasks
 import datetime
 import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
+# 가상 환경 활성화 경로
+venv_activate = os.path.join('D:\\OneDrive\\Work\\Source\\Repos\\pybids\\.venv\\Scripts\\activate.bat')
+
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
@@ -228,16 +231,18 @@ async def update_data_task():
 
 
 
+
+# Function to run a script within the virtual environment
 def fetch_data_and_update(script_name):
-    try:
-        result = subprocess.run(['python', script_name], capture_output=True, text=True, encoding='utf-8')
-        if result.returncode == 0:
-            print(f"Script {script_name} executed successfully.")
-        else:
-            print(f"Script {script_name} failed with status code {result.returncode}.")
-            print(f"Error message: {result.stderr}")
-    except Exception as e:
-        print(f"An error occurred while executing {script_name}: {e}")
+    venv_activate = os.path.join('D:\\OneDrive\\Work\\Source\\Repos\\pybids\\.venv\\Scripts\\Activate.ps1')
+    command = f'powershell -Command "{venv_activate}; python {script_name}"'
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"Script {script_name} failed with status code {result.returncode}.")
+        print(f"Error message: {result.stderr}")
+    else:
+        print(f"Script {script_name} finished successfully.")
+
 
 async def send_daily_updates():
     channel = bot.get_channel(int(CHANNEL_ID))
