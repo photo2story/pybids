@@ -246,8 +246,7 @@ def fetch_data_and_update(script_name):
 
 async def send_daily_updates():
     channel = bot.get_channel(int(CHANNEL_ID))
-    specific_date_str = "20240607"  # 특정 날짜로 설정
-    specific_date = datetime.datetime.strptime(specific_date_str, "%Y%m%d").date()
+    today = datetime.date.today()  # 오늘의 날짜로 설정
     
     # 필터링된 공고
     bid_updates = []
@@ -256,7 +255,7 @@ async def send_daily_updates():
     # Bid updates
     df_bids = pd.read_csv("filtered_bids_data.csv")
     df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt']).dt.date
-    new_bids = df_bids[df_bids['bidNtceDt'] == specific_date]
+    new_bids = df_bids[df_bids['bidNtceDt'] == today]
     for index, row in new_bids.iterrows():
         msg = (
             f"\n[{index + 1}] : 등록번호: {row['bidNtceNo']}\n"
@@ -271,7 +270,7 @@ async def send_daily_updates():
     # Prebid updates
     df_prebids = pd.read_csv("filtered_prebids_data.csv")
     df_prebids['rcptDt'] = pd.to_datetime(df_prebids['rcptDt']).dt.date
-    new_prebids = df_prebids[df_prebids['rcptDt'] == specific_date]
+    new_prebids = df_prebids[df_prebids['rcptDt'] == today]
     for index, row in new_prebids.iterrows():
         asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
         msg = (
@@ -297,6 +296,7 @@ async def send_daily_updates():
             await channel.send(message)
     else:
         await channel.send("오늘의 새로운 사전 공고가 없습니다.")
+
 
 bot.run(TOKEN)
 
