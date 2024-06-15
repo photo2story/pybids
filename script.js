@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Parsed bid data:', data);
                 const bids = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
                 console.log('Filtered bid data:', bids);
-                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt');
+                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', null, 'link');
             })
             .catch(error => console.error('Error loading bid data:', error));
 
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Parsed prebid data:', data);
                 const prebids = data.filter(item => item['rcptDt'].split(' ')[0] === date);
                 console.log('Filtered prebid data:', prebids);
-                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt');
+                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', null, 'link');
             })
             .catch(error => console.error('Error loading prebid data:', error));
     }
@@ -88,6 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Displayed data:', items);
     }
 });
+
+
 
 
 
