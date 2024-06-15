@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Parsed bid data:', data);
                 const bids = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
                 console.log('Filtered bid data:', bids);
-                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', null, 'link');
+                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt');
             })
             .catch(error => console.error('Error loading bid data:', error));
 
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Parsed prebid data:', data);
                 const prebids = data.filter(item => item['rcptDt'].split(' ')[0] === date);
                 console.log('Filtered prebid data:', prebids);
-                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', null, 'link');
+                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt');
             })
             .catch(error => console.error('Error loading prebid data:', error));
     }
@@ -74,13 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
             task.className = 'task';
             const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
             let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
-            let linkInfo = linkKey ? `<br><a href="${item[linkKey]}" target="_blank">링크</a>` : '';
+            let linkInfo = linkKey && item[linkKey] ? `<br><a href="${item[linkKey]}" target="_blank">링크</a>` : '';
             task.innerHTML = `<span>${date} ${item[key]}${extraInfo}${linkInfo}</span><input type="checkbox">`;
             container.appendChild(task);
         });
         console.log('Displayed data:', items);
     }
 });
+
 
 
 
