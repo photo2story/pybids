@@ -1,5 +1,8 @@
 # main.py
 
+from flask import Flask
+from threading import Thread
+import asyncio
 import os
 import pandas as pd
 from dotenv import load_dotenv
@@ -14,6 +17,22 @@ venv_activate = os.path.join('D:\\OneDrive\\Work\\Source\\Repos\\pybids\\.venv\\
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
+
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "I'm alive"
+
+def run():
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)))
+
+def keep_alive():
+    server = Thread(target=run)
+    server.start()
+
+keep_alive()# main.py에 추가
+tracemalloc.start()# Discord 설정
 
 # Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
@@ -322,8 +341,7 @@ def get_data():
     return response
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
+    app.run(host='0.0.0.0', port=int(os.getenv("PORT", 8080)))
 
 
 # .\\.venv\\Scripts\\activate
