@@ -156,6 +156,7 @@ async def bid_win(ctx):
                 f"낙찰금액: {sucsfbidAmt}\n"
                 f"개찰일시: {row['opengDt']}\n"
                 f"낙찰자: {row['opengCorpInfo']}\n"
+                f"링크: http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}\n"
             )
             messages.append(msg)
 
