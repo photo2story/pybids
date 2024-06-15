@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseCSV(csvText) {
         const lines = csvText.split('\n');
         const headers = lines[0].split(',');
-        const items = lines.slice(1).map(line => {
+        const items = lines.slice(1).filter(line => line.trim() !== '').map(line => {
             const values = line.split(',');
             let item = {};
             headers.forEach((header, index) => {
@@ -72,12 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayData(items, container, key, dateKey, extraKey = null, linkKey = null) {
         container.innerHTML = '';
         items.forEach(item => {
-            const task = document.createElement('div');
+            const task = document.createElement('a'); // div 대신 a 태그 사용
             task.className = 'task';
+            task.href = item[linkKey]; // 링크 설정
+            task.target = '_blank'; // 새 창에서 열기
             const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
             let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
-            let linkInfo = linkKey && item[linkKey] ? `<br><a href="${item[linkKey]}" target="_blank">링크</a>` : '';
-            task.innerHTML = `<span>${date} ${item[key]}${extraInfo}${linkInfo}</span><input type="checkbox">`;
+            task.innerHTML = `<span>${date} ${item[key]}${extraInfo}</span>`;
             container.appendChild(task);
         });
         console.log('Displayed data:', items);
