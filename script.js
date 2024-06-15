@@ -74,25 +74,34 @@ document.addEventListener('DOMContentLoaded', () => {
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
-            task.style.cursor = 'pointer'; // 마우스 커서 변경
-            task.onclick = () => {
-                if (item[linkKey]) {
-                    window.open(item[linkKey], '_blank'); // 새 창에서 링크 열기
-                }
-            };
+            task.style.display = 'flex'; // 플렉스박스 설정
+
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.style.marginRight = '10px';
             checkbox.style.accentColor = 'yellow'; // 노란색으로 체크박스 색상 변경
+
+            const text = document.createElement('span');
+            text.style.flex = '1';
+            text.style.cursor = 'pointer'; // 마우스 커서 변경
+            text.onclick = () => {
+                if (item[linkKey]) {
+                    window.open(item[linkKey], '_blank'); // 새 창에서 링크 열기
+                }
+            };
+
             const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
             let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
-            task.innerHTML = `<span>${date} ${item[key]}${extraInfo}</span>`;
-            task.prepend(checkbox); // 체크박스를 태스크 앞에 추가
+            text.innerHTML = `${date} ${item[key]}${extraInfo}`;
+
+            task.appendChild(checkbox);
+            task.appendChild(text);
             container.appendChild(task);
         });
         console.log('Displayed data:', items);
     }
 });
+
 
 
 

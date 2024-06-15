@@ -50,7 +50,7 @@ input[type="checkbox"] {
         width: 100%;
         padding: 10px;
     }
-    .task {
+    .task span {
         font-size: 14px; /* 작은 화면에서는 글씨 크기를 약간 줄임 */
     }
 }
