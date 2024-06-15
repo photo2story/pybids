@@ -72,10 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayData(items, container, key, dateKey, extraKey = null, linkKey = null) {
         container.innerHTML = '';
         items.forEach(item => {
-            const task = document.createElement('a'); // div 대신 a 태그 사용
+            const task = document.createElement('div');
             task.className = 'task';
-            task.href = item[linkKey]; // 링크 설정
-            task.target = '_blank'; // 새 창에서 열기
+            task.style.cursor = 'pointer'; // 마우스 커서 변경
+            task.onclick = () => {
+                if (item[linkKey]) {
+                    window.open(item[linkKey], '_blank'); // 새 창에서 링크 열기
+                }
+            };
             const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
             let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
             task.innerHTML = `<span>${date} ${item[key]}${extraInfo}</span>`;
