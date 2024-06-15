@@ -33,7 +33,7 @@ def keep_alive():
     server.start()
 
 keep_alive()# main.py에 추가
-tracemalloc.start()# Discord 설정
+# tracemalloc.start()# Discord 설정
 
 # Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
