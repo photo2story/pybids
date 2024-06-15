@@ -300,6 +300,31 @@ async def send_daily_updates():
 
 bot.run(TOKEN)
 
+# main.py에 추가
+from flask import Flask, jsonify
+import json
+
+app = Flask(__name__)
+
+@app.route('/api/test', methods=['GET'])
+def test():
+    return jsonify({"message": "Hello, World!"})
+
+@app.route('/data.json', methods=['GET'])
+def get_data():
+    with open('data.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    response = app.response_class(
+        response=json.dumps(data, ensure_ascii=False),
+        mimetype='application/json',
+        content_type='application/json; charset=utf-8'
+    )
+    return response
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
 
 # .\\.venv\\Scripts\\activate
 # python main.py
