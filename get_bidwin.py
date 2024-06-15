@@ -52,7 +52,10 @@ if __name__ == "__main__":
     
     all_data = []
     page_no = 1
-    target_company = "수성엔지니어링"
+    target_companies = ["수성엔지니어링", "도화", "건화", "한국종합", "동명", "유신",
+                        "이산", "케이지", "삼안", "동해", "다산", "제일", "삼보"
+                        ]  # 여러 개의 회사를 포함하는 리스트
+    keywords = ["설계", "계획", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량"]  # 필터링할 키워드 리스트
     
     while True:
         data = fetch_data_with_curl(page_no, start_date, end_date)
@@ -73,7 +76,11 @@ if __name__ == "__main__":
             break
     
     if all_data:
-        filtered_data = [item for item in all_data if target_company in item.get('opengCorpInfo', '')]
+        filtered_data = [
+            item for item in all_data 
+            if any(company in item.get('opengCorpInfo', '') for company in target_companies) 
+            and any(keyword in item.get('bidNtceNm', '') for keyword in keywords)
+        ]
         if filtered_data:
             columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'opengCorpInfo', 'sucsfbidAmt', 'opengDt']
             # 필요한 필드가 실제로 존재하는지 확인
@@ -81,9 +88,8 @@ if __name__ == "__main__":
             columns = [col for col in columns if col in existing_columns]
             save_to_csv(filtered_data, 'filtered_bidwin_data.csv', columns)
         else:
-            print(f"No matching data found for '{target_company}'")
+            print(f"No matching data found for companies: {', '.join(target_companies)} with keywords: {', '.join(keywords)}")
     else:
         print("No data found")
-
 
 # python get_bidwin.py
