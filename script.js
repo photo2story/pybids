@@ -57,11 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseCSV(csvText) {
         const lines = csvText.split('\n');
         const headers = lines[0].split(',');
-        const items = lines.slice(1).filter(line => line.trim() !== '').map(line => {
+        const items = lines.slice(1).map(line => {
             const values = line.split(',');
             let item = {};
             headers.forEach((header, index) => {
-                item[header.trim()] = values[index].trim();
+                item[header.trim()] = values[index] ? values[index].trim() : '';
             });
             return item;
         });
