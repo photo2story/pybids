@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('date');
-    const bidwinSection = document.getElementById('bidwin-section');
+    const bidsTodaySection = document.getElementById('bids-today-section');
     const bidsSection = document.getElementById('bids-section');
     const prebidsSection = document.getElementById('prebids-section');
 
@@ -15,77 +15,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadAndDisplayData(date) {
-        fetch('filtered_bidwin_data.csv')
-            .then(response => response.text())
-            .then(csvText => {
-                console.log('filtered_bidwin_data.csv loaded:', csvText);
-                const data = parseCSV(csvText);
-                console.log('Parsed bidwin data:', data);
-                const bidwins = data.filter(item => item['opengDt'].split(' ')[0] === date);
-                console.log('Filtered bidwin data:', bidwins);
-                displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'opengCorpInfo', 'link');
-            })
-            .catch(error => console.error('Error loading bidwin data:', error));
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Fetched data:', data); // 데이터 로드 확인 로그
+                const bidsToday = data.bidwins.filter(bid => bid.opengDt && bid.opengDt.split(' ')[0] === date);
+                const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
+                const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
 
-        fetch('filtered_bids_data.csv')
-            .then(response => response.text())
-            .then(csvText => {
-                console.log('filtered_bids_data.csv loaded:', csvText);
-                const data = parseCSV(csvText);
-                console.log('Parsed bid data:', data);
-                const bids = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
-                console.log('Filtered bid data:', bids);
+                console.log('Bids Today:', bidsToday); // 필터링된 데이터 로그
+                console.log('Bids:', bids); // 필터링된 데이터 로그
+                console.log('Prebids:', prebids); // 필터링된 데이터 로그
+
+                displayData(bidsToday, bidsTodaySection, 'bidNtceNm', 'opengDt', 'opengCorpInfo');
                 displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt');
-            })
-            .catch(error => console.error('Error loading bid data:', error));
-
-        fetch('filtered_prebids_data.csv')
-            .then(response => response.text())
-            .then(csvText => {
-                console.log('filtered_prebids_data.csv loaded:', csvText);
-                const data = parseCSV(csvText);
-                console.log('Parsed prebid data:', data);
-                const prebids = data.filter(item => item['rcptDt'].split(' ')[0] === date);
-                console.log('Filtered prebid data:', prebids);
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt');
             })
-            .catch(error => console.error('Error loading prebid data:', error));
+            .catch(error => console.error('Error loading data:', error));
     }
 
-    function parseCSV(csvText) {
-        const lines = csvText.split('\n');
-        const headers = lines[0].split(',');
-        const items = lines.slice(1).map(line => {
-            const values = line.split(',');
-            let item = {};
-            headers.forEach((header, index) => {
-                item[header] = values[index];
-            });
-            return item;
-        });
-        console.log('Parsed CSV:', items);
-        return items;
-    }
-
-    function displayData(items, container, key, dateKey, extraKey = null, linkKey = null) {
+    function displayData(items, container, key, dateKey, extraKey = null) {
         container.innerHTML = '';
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
-            const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
+            const date = item[dateKey] ? item[dateKey].split(' ')[0] : ''; // 날짜만 추출, 날짜가 없을 경우 빈 문자열
             let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
-            let linkInfo = linkKey && item[linkKey] ? `<br><a href="${item[linkKey]}" target="_blank">링크</a>` : '';
-            task.innerHTML = `<span>${date} ${item[key]}${extraInfo}${linkInfo}</span><input type="checkbox">`;
+            task.innerHTML = `<span>${date} ${item[key]}${extraInfo}</span><input type="checkbox">`;
             container.appendChild(task);
         });
-        console.log('Displayed data:', items);
     }
 });
-
-
-
-
-
 
 
 
