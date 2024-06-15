@@ -18,29 +18,35 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('filtered_bidwin_data.csv')
             .then(response => response.text())
             .then(csvText => {
+                console.log('filtered_bidwin_data.csv:', csvText);
                 const data = parseCSV(csvText);
+                console.log('Parsed bidwin data:', data);
                 const bidwins = data.filter(item => item['opengDt'].split(' ')[0] === date);
                 displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'opengCorpInfo', 'link');
             })
-            .catch(error => console.error('Error loading data:', error));
+            .catch(error => console.error('Error loading bidwin data:', error));
 
         fetch('filtered_bids_data.csv')
             .then(response => response.text())
             .then(csvText => {
+                console.log('filtered_bids_data.csv:', csvText);
                 const data = parseCSV(csvText);
+                console.log('Parsed bid data:', data);
                 const bids = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
                 displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', null, 'link');
             })
-            .catch(error => console.error('Error loading data:', error));
+            .catch(error => console.error('Error loading bid data:', error));
 
         fetch('filtered_prebids_data.csv')
             .then(response => response.text())
             .then(csvText => {
+                console.log('filtered_prebids_data.csv:', csvText);
                 const data = parseCSV(csvText);
+                console.log('Parsed prebid data:', data);
                 const prebids = data.filter(item => item['rcptDt'].split(' ')[0] === date);
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', null, 'link');
             })
-            .catch(error => console.error('Error loading data:', error));
+            .catch(error => console.error('Error loading prebid data:', error));
     }
 
     function parseCSV(csvText) {
@@ -70,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
