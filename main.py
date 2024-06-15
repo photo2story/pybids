@@ -89,7 +89,7 @@ async def prebid(ctx, *, query: str):
                     f"{row['prdctClsfcNoNm']}\n"
                     f"{asignBdgtAmt}\n"
                     f"{row['rcptDt']}\n"
-                    f""http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}"
+                    f"링크: http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}\n"
                 )
                 messages.append(msg)
 
