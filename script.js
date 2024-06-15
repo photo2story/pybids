@@ -18,10 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('filtered_bidwin_data.csv')
             .then(response => response.text())
             .then(csvText => {
-                console.log('filtered_bidwin_data.csv:', csvText);
+                console.log('filtered_bidwin_data.csv loaded:', csvText);
                 const data = parseCSV(csvText);
                 console.log('Parsed bidwin data:', data);
                 const bidwins = data.filter(item => item['opengDt'].split(' ')[0] === date);
+                console.log('Filtered bidwin data:', bidwins);
                 displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'opengCorpInfo', 'link');
             })
             .catch(error => console.error('Error loading bidwin data:', error));
@@ -29,10 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('filtered_bids_data.csv')
             .then(response => response.text())
             .then(csvText => {
-                console.log('filtered_bids_data.csv:', csvText);
+                console.log('filtered_bids_data.csv loaded:', csvText);
                 const data = parseCSV(csvText);
                 console.log('Parsed bid data:', data);
                 const bids = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
+                console.log('Filtered bid data:', bids);
                 displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', null, 'link');
             })
             .catch(error => console.error('Error loading bid data:', error));
@@ -40,10 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('filtered_prebids_data.csv')
             .then(response => response.text())
             .then(csvText => {
-                console.log('filtered_prebids_data.csv:', csvText);
+                console.log('filtered_prebids_data.csv loaded:', csvText);
                 const data = parseCSV(csvText);
                 console.log('Parsed prebid data:', data);
                 const prebids = data.filter(item => item['rcptDt'].split(' ')[0] === date);
+                console.log('Filtered prebid data:', prebids);
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', null, 'link');
             })
             .catch(error => console.error('Error loading prebid data:', error));
@@ -60,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             return item;
         });
+        console.log('Parsed CSV:', items);
         return items;
     }
 
@@ -74,8 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
             task.innerHTML = `<span>${date} ${item[key]}${extraInfo}${linkInfo}</span><input type="checkbox">`;
             container.appendChild(task);
         });
+        console.log('Displayed data:', items);
     }
 });
+
 
 
 
