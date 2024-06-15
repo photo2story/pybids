@@ -20,7 +20,25 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(csvText => {
                 const data = parseCSV(csvText);
                 const bidwins = data.filter(item => item['opengDt'].split(' ')[0] === date);
-                displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'opengCorpInfo');
+                displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'opengCorpInfo', 'link');
+            })
+            .catch(error => console.error('Error loading data:', error));
+
+        fetch('filtered_bids_data.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                const data = parseCSV(csvText);
+                const bids = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
+                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', null, 'link');
+            })
+            .catch(error => console.error('Error loading data:', error));
+
+        fetch('filtered_prebids_data.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                const data = parseCSV(csvText);
+                const prebids = data.filter(item => item['rcptDt'].split(' ')[0] === date);
+                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', null, 'link');
             })
             .catch(error => console.error('Error loading data:', error));
     }
@@ -39,18 +57,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return items;
     }
 
-    function displayData(items, container, key, dateKey, extraKey = null) {
+    function displayData(items, container, key, dateKey, extraKey = null, linkKey = null) {
         container.innerHTML = '';
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
             const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
             let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
-            task.innerHTML = `<span>${date} ${item[key]}${extraInfo}</span><input type="checkbox">`;
+            let linkInfo = linkKey ? `<br><a href="${item[linkKey]}" target="_blank">링크</a>` : '';
+            task.innerHTML = `<span>${date} ${item[key]}${extraInfo}${linkInfo}</span><input type="checkbox">`;
             container.appendChild(task);
         });
     }
 });
+
 
 
 

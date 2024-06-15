@@ -63,7 +63,7 @@ if __name__ == "__main__":
     
     all_data = []
     page_no = 1
-    columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
+    columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt', 'link']
     file_path = "filtered_bids_data.csv"
     
     while True:
@@ -72,6 +72,8 @@ if __name__ == "__main__":
             items = data.get('response', {}).get('body', {}).get('items', [])
             if not items:
                 break
+            for item in items:
+                item['link'] = f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={item['bidNtceNo']}"
             all_data.extend(items)
             page_no += 1
         else:
@@ -100,5 +102,6 @@ if __name__ == "__main__":
         save_to_csv(filtered_df, 'filtered_bids_data.csv', columns)            
     else:
         print("No data found")
+
 
 # python get_bids.py

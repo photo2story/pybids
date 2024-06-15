@@ -7,14 +7,10 @@ import pandas as pd
 import datetime
 import json
 import sys
-# 가상 환경 경로를 추가합니다.
-# venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
-# sys.path.append(venv_path)
-# 환경 변수에서 API 키를 로드
+
 load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
-# cURL 명령어 실행
 def fetch_data_with_curl(page_no, start_date, end_date):
     base_url = "https://apis.data.go.kr/1230000/ScsbidInfoService/getOpengResultListInfoServc"
     params = {
@@ -39,7 +35,6 @@ def fetch_data_with_curl(page_no, start_date, end_date):
         print(f"An error occurred: {e}")
     return None
 
-# 데이터 CSV로 저장
 def save_to_csv(data, file_path, columns):
     df = pd.DataFrame(data)
     df = df[columns]
@@ -54,8 +49,8 @@ if __name__ == "__main__":
     page_no = 1
     target_companies = ["수성엔지니어링", "도화", "건화", "한국종합", "동명", "유신",
                         "이산", "케이지", "삼안", "동해", "다산", "제일", "삼보"
-                        ]  # 여러 개의 회사를 포함하는 리스트
-    keywords = ["설계", "계획", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량"]  # 필터링할 키워드 리스트
+                        ]
+    keywords = ["설계", "계획", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량"]
     
     while True:
         data = fetch_data_with_curl(page_no, start_date, end_date)
@@ -82,8 +77,9 @@ if __name__ == "__main__":
             and any(keyword in item.get('bidNtceNm', '') for keyword in keywords)
         ]
         if filtered_data:
-            columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'opengCorpInfo', 'sucsfbidAmt', 'opengDt']
-            # 필요한 필드가 실제로 존재하는지 확인
+            for item in filtered_data:
+                item['link'] = f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={item['bidNtceNo']}"
+            columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'opengCorpInfo', 'sucsfbidAmt', 'opengDt', 'link']
             existing_columns = filtered_data[0].keys()
             columns = [col for col in columns if col in existing_columns]
             save_to_csv(filtered_data, 'filtered_bidwin_data.csv', columns)
@@ -91,5 +87,6 @@ if __name__ == "__main__":
             print(f"No matching data found for companies: {', '.join(target_companies)} with keywords: {', '.join(keywords)}")
     else:
         print("No data found")
+
 
 # python get_bidwin.py
