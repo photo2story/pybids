@@ -6,7 +6,7 @@ body {
 }
 
 .container {
-    max-width: 600px;
+    max-width: 360px; /* 폰에서 잘 보이도록 폭을 360px로 설정 */
     margin: 0 auto;
     background: white;
     padding: 20px;
@@ -25,6 +25,7 @@ h1 {
 .task {
     display: flex;
     justify-content: space-between;
+    align-items: center; /* 중앙 정렬 */
     margin-bottom: 10px;
     padding: 10px;
     border: 1px solid #ddd;
@@ -34,4 +35,12 @@ h1 {
 
 .task span {
     flex: 1;
+    font-size: 16px; /* 내용 글씨 크기 키움 */
 }
+
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: yellow; /* 체크박스를 노란색으로 */
+}
+
