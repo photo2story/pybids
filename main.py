@@ -298,3 +298,4 @@ bot.run(TOKEN)
 
 # .\\.venv\\Scripts\\activate
 # python main.py
+# .\\venv\\Scripts\\activate
