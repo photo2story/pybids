@@ -1,5 +1,5 @@
 # main.py
-
+os.environ['PYTHONIOENCODING'] = 'UTF-8'
 from flask import Flask
 from threading import Thread
 import asyncio
