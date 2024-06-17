@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('date');
-    const bidsTodaySection = document.getElementById('bids-today-section');
+    const bidwinSection = document.getElementById('bidwin-section');
     const bidsSection = document.getElementById('bids-section');
     const prebidsSection = document.getElementById('prebids-section');
 
@@ -15,37 +15,100 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadAndDisplayData(date) {
-        fetch('data.json')
-            .then(response => response.json())
-            .then(data => {
-                console.log('Fetched data:', data); // 데이터 로드 확인 로그
-                const bidsToday = data.bidwins.filter(bid => bid.opengDt && bid.opengDt.split(' ')[0] === date);
-                const bids = data.bids.filter(bid => bid.bidNtceDt && bid.bidNtceDt.split(' ')[0] === date);
-                const prebids = data.prebids.filter(prebid => prebid.rcptDt && prebid.rcptDt.split(' ')[0] === date);
-
-                console.log('Bids Today:', bidsToday); // 필터링된 데이터 로그
-                console.log('Bids:', bids); // 필터링된 데이터 로그
-                console.log('Prebids:', prebids); // 필터링된 데이터 로그
-
-                displayData(bidsToday, bidsTodaySection, 'bidNtceNm', 'opengDt', 'opengCorpInfo');
-                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt');
-                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt');
+        console.log('Loading data for date:', date);
+        
+        fetch('filtered_bidwin_data.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                console.log('filtered_bidwin_data.csv loaded:', csvText);
+                const data = parseCSV(csvText);
+                console.log('Parsed bidwin data:', data);
+                const bidwins = data.filter(item => item['opengDt'].split(' ')[0] === date);
+                console.log('Filtered bidwin data:', bidwins);
+                displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'opengCorpInfo', 'link');
             })
-            .catch(error => console.error('Error loading data:', error));
+            .catch(error => console.error('Error loading bidwin data:', error));
+
+        fetch('filtered_bids_data.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                console.log('filtered_bids_data.csv loaded:', csvText);
+                const data = parseCSV(csvText);
+                console.log('Parsed bid data:', data);
+                const bids = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
+                console.log('Filtered bid data:', bids);
+                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', null, 'link');
+            })
+            .catch(error => console.error('Error loading bid data:', error));
+
+        fetch('filtered_prebids_data.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                console.log('filtered_prebids_data.csv loaded:', csvText);
+                const data = parseCSV(csvText);
+                console.log('Parsed prebid data:', data);
+                const prebids = data.filter(item => item['rcptDt'].split(' ')[0] === date);
+                console.log('Filtered prebid data:', prebids);
+                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', null, 'link');
+            })
+            .catch(error => console.error('Error loading prebid data:', error));
     }
 
-    function displayData(items, container, key, dateKey, extraKey = null) {
+    function parseCSV(csvText) {
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',');
+        const items = lines.slice(1).filter(line => line.trim() !== '').map(line => {
+            const values = line.split(',');
+            let item = {};
+            headers.forEach((header, index) => {
+                item[header.trim()] = values[index] ? values[index].trim() : '';
+            });
+            return item;
+        });
+        console.log('Parsed CSV:', items);
+        return items;
+    }
+
+    function displayData(items, container, key, dateKey, extraKey = null, linkKey = null) {
         container.innerHTML = '';
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
-            const date = item[dateKey] ? item[dateKey].split(' ')[0] : ''; // 날짜만 추출, 날짜가 없을 경우 빈 문자열
+            task.style.display = 'flex'; // 플렉스박스 설정
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.style.marginRight = '10px';
+            checkbox.style.accentColor = 'yellow'; // 노란색으로 체크박스 색상 변경
+
+            const text = document.createElement('span');
+            text.style.flex = '1';
+            text.style.cursor = 'pointer'; // 마우스 커서 변경
+            text.onclick = () => {
+                if (item[linkKey]) {
+                    window.open(item[linkKey], '_blank'); // 새 창에서 링크 열기
+                }
+            };
+
+            const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
             let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
-            task.innerHTML = `<span>${date} ${item[key]}${extraInfo}</span><input type="checkbox">`;
+            text.innerHTML = `${date} ${item[key]}${extraInfo}`;
+
+            task.appendChild(checkbox);
+            task.appendChild(text);
             container.appendChild(task);
         });
+        console.log('Displayed data:', items);
     }
 });
+
+
+
+
+
+
+
+
 
 
 

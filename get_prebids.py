@@ -1,15 +1,17 @@
 # get_prebids.py
 
 import os
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 import subprocess
 import json
 import pandas as pd
 import datetime
 import sys
+
 # 가상 환경 경로를 추가합니다.
 # venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
 # sys.path.append(venv_path)
+
 # 환경 변수에서 API 키를 로드
 load_dotenv()
 api_key = os.getenv('BID_API_KEY')
@@ -60,6 +62,8 @@ if __name__ == "__main__":
                 items = json_data.get('response', {}).get('body', {}).get('items', [])
                 if not items:
                     break
+                for item in items:
+                    item['link'] = f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={item['bfSpecRgstNo']}"
                 all_data.extend(items)
                 page_no += 1
             except json.JSONDecodeError as e:
@@ -71,7 +75,7 @@ if __name__ == "__main__":
     
     if all_data:
         df_new = pd.DataFrame(all_data)
-        columns = ['bfSpecRgstNo', 'orderInsttNm', 'prdctClsfcNoNm', 'asignBdgtAmt', 'rcptDt']
+        columns = ['bfSpecRgstNo', 'orderInsttNm', 'prdctClsfcNoNm', 'asignBdgtAmt', 'rcptDt', 'link']
         if not os.path.exists('filtered_prebids_data.csv'):
             save_to_csv(df_new, 'filtered_prebids_data.csv', columns)
         else:
@@ -94,7 +98,6 @@ if __name__ == "__main__":
             save_to_csv(filtered_df, 'filtered_prebids_data.csv', columns)
     else:
         print("No data found")
-
 
 
 # python get_prebids.py

@@ -6,7 +6,7 @@ body {
 }
 
 .container {
-    max-width: 600px;
+    max-width: 600px; /* 최대 폭을 600px로 설정 */
     margin: 0 auto;
     background: white;
     padding: 20px;
@@ -25,6 +25,7 @@ h1 {
 .task {
     display: flex;
     justify-content: space-between;
+    align-items: center; /* 중앙 정렬 */
     margin-bottom: 10px;
     padding: 10px;
     border: 1px solid #ddd;
@@ -34,4 +35,23 @@ h1 {
 
 .task span {
     flex: 1;
+    font-size: 16px; /* 내용 글씨 크기 키움 */
 }
+
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: yellow; /* 체크박스를 노란색으로 */
+}
+
+/* 미디어 쿼리를 사용하여 작은 화면에서도 잘 보이도록 조정 */
+@media (max-width: 600px) {
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+    .task span {
+        font-size: 14px; /* 작은 화면에서는 글씨 크기를 약간 줄임 */
+    }
+}
+

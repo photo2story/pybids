@@ -1,5 +1,8 @@
 # main.py
 
+from flask import Flask
+from threading import Thread
+import asyncio
 import os
 import pandas as pd
 from dotenv import load_dotenv
@@ -8,9 +11,29 @@ from discord.ext import commands, tasks
 import datetime
 import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
+import tracemalloc
+# 가상 환경 활성화 경로
+venv_activate = os.path.join('D:\\OneDrive\\Work\\Source\\Repos\\pybids\\.venv\\Scripts\\activate.bat')
+
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
+
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "I'm alive"
+
+def run():
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)))
+
+def keep_alive():
+    server = Thread(target=run)
+    server.start()
+
+keep_alive()# main.py에 추가
+# tracemalloc.start()# Discord 설정
 
 # Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
@@ -66,7 +89,7 @@ async def prebid(ctx, *, query: str):
                     f"{row['prdctClsfcNoNm']}\n"
                     f"{asignBdgtAmt}\n"
                     f"{row['rcptDt']}\n"
-                    f"https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={row['bfSpecRgstNo']}\n"
+                    f"링크: http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}\n"
                 )
                 messages.append(msg)
 
@@ -133,6 +156,7 @@ async def bid_win(ctx):
                 f"낙찰금액: {sucsfbidAmt}\n"
                 f"개찰일시: {row['opengDt']}\n"
                 f"낙찰자: {row['opengCorpInfo']}\n"
+                f"링크: http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}\n"
             )
             messages.append(msg)
 
@@ -228,21 +252,22 @@ async def update_data_task():
 
 
 
+
+# Function to run a script within the virtual environment
 def fetch_data_and_update(script_name):
-    try:
-        result = subprocess.run(['python', script_name], capture_output=True, text=True, encoding='utf-8')
-        if result.returncode == 0:
-            print(f"Script {script_name} executed successfully.")
-        else:
-            print(f"Script {script_name} failed with status code {result.returncode}.")
-            print(f"Error message: {result.stderr}")
-    except Exception as e:
-        print(f"An error occurred while executing {script_name}: {e}")
+    venv_activate = os.path.join('D:\\OneDrive\\Work\\Source\\Repos\\pybids\\.venv\\Scripts\\Activate.ps1')
+    command = f'powershell -Command "{venv_activate}; python {script_name}"'
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"Script {script_name} failed with status code {result.returncode}.")
+        print(f"Error message: {result.stderr}")
+    else:
+        print(f"Script {script_name} finished successfully.")
+
 
 async def send_daily_updates():
     channel = bot.get_channel(int(CHANNEL_ID))
-    specific_date_str = "20240607"  # 특정 날짜로 설정
-    specific_date = datetime.datetime.strptime(specific_date_str, "%Y%m%d").date()
+    today = datetime.date.today()  # 오늘의 날짜로 설정
     
     # 필터링된 공고
     bid_updates = []
@@ -251,7 +276,7 @@ async def send_daily_updates():
     # Bid updates
     df_bids = pd.read_csv("filtered_bids_data.csv")
     df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt']).dt.date
-    new_bids = df_bids[df_bids['bidNtceDt'] == specific_date]
+    new_bids = df_bids[df_bids['bidNtceDt'] == today]
     for index, row in new_bids.iterrows():
         msg = (
             f"\n[{index + 1}] : 등록번호: {row['bidNtceNo']}\n"
@@ -266,7 +291,7 @@ async def send_daily_updates():
     # Prebid updates
     df_prebids = pd.read_csv("filtered_prebids_data.csv")
     df_prebids['rcptDt'] = pd.to_datetime(df_prebids['rcptDt']).dt.date
-    new_prebids = df_prebids[df_prebids['rcptDt'] == specific_date]
+    new_prebids = df_prebids[df_prebids['rcptDt'] == today]
     for index, row in new_prebids.iterrows():
         asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원"
         msg = (
@@ -293,7 +318,32 @@ async def send_daily_updates():
     else:
         await channel.send("오늘의 새로운 사전 공고가 없습니다.")
 
+
 bot.run(TOKEN)
+
+# main.py에 추가
+from flask import Flask, jsonify
+import json
+
+app = Flask(__name__)
+
+@app.route('/api/test', methods=['GET'])
+def test():
+    return jsonify({"message": "Hello, World!"})
+
+@app.route('/data.json', methods=['GET'])
+def get_data():
+    with open('data.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    response = app.response_class(
+        response=json.dumps(data, ensure_ascii=False),
+        mimetype='application/json',
+        content_type='application/json; charset=utf-8'
+    )
+    return response
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=int(os.getenv("PORT", 8080)))
 
 
 # .\\.venv\\Scripts\\activate

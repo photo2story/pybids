@@ -1,7 +1,7 @@
 # get_bids.py
 
 import os
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 import subprocess
 import json
 import pandas as pd
@@ -10,11 +10,12 @@ import sys
 
 print(sys.path)
 
-# 가상 환경 경로를 추가합니다.
-# venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
-# sys.path.append(venv_path)
+# 가상 환경 패키지 경로 추가
+venv_path = r'D:\OneDrive\Work\Source\Repos\pybids\.venv\Lib\site-packages'
+if venv_path not in sys.path:
+    sys.path.insert(0, venv_path)
 # 환경 변수에서 API 키를 로드
-# load_dotenv()
+load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
 # 키워드 리스트
@@ -62,7 +63,7 @@ if __name__ == "__main__":
     
     all_data = []
     page_no = 1
-    columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
+    columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt', 'link']
     file_path = "filtered_bids_data.csv"
     
     while True:
@@ -71,6 +72,8 @@ if __name__ == "__main__":
             items = data.get('response', {}).get('body', {}).get('items', [])
             if not items:
                 break
+            for item in items:
+                item['link'] = f"http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={item['bidNtceNo']}"
             all_data.extend(items)
             page_no += 1
         else:
@@ -99,5 +102,6 @@ if __name__ == "__main__":
         save_to_csv(filtered_df, 'filtered_bids_data.csv', columns)            
     else:
         print("No data found")
+
 
 # python get_bids.py
