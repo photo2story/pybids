@@ -13,8 +13,8 @@ import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 import tracemalloc
 # 가상 환경 활성화 경로
-venv_activate = os.path.join('D:\\OneDrive\\Work\\Source\\Repos\\pybids\\.venv\\Scripts\\activate.bat')
-
+venv_path = os.path.join(os.path.dirname(__file__), '.venv')
+site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()

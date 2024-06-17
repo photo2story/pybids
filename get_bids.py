@@ -11,7 +11,9 @@ import sys
 print(sys.path)
 
 # 가상 환경 패키지 경로 추가
-venv_path = r'D:\OneDrive\Work\Source\Repos\pybids\.venv\Lib\site-packages'
+venv_path = os.path.join(os.path.dirname(__file__), '.venv')
+site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
+
 if venv_path not in sys.path:
     sys.path.insert(0, venv_path)
 # 환경 변수에서 API 키를 로드

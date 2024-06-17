@@ -9,8 +9,8 @@ import datetime
 import sys
 
 # 가상 환경 경로를 추가합니다.
-# venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
-# sys.path.append(venv_path)
+venv_path = os.path.join(os.path.dirname(__file__), '.venv')
+site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
