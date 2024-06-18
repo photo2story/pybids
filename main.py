@@ -39,7 +39,7 @@ keep_alive()# main.py에 추가
 
 # Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
-CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
+CHANNEL_ID = os.getenv('DISCORD_BID_CHANNEL_ID')
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -329,7 +329,7 @@ import json
 
 app = Flask(__name__)
 
-DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
+DISCORD_WEBHOOK_URL = os.getenv('DISCORD_BID_WEBHOOK_URL')
 
 @app.route('/update_sendOK', methods=['POST'])
 def update_sendOK():
