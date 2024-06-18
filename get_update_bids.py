@@ -4,55 +4,9 @@ import pandas as pd
 import datetime
 import os
 import sys
-import requests
-from dotenv import load_dotenv
-
 # 가상 환경 경로를 추가합니다.
 venv_path = os.path.join(os.path.dirname(__file__), 'venv', 'Lib', 'site-packages')
 sys.path.append(venv_path)
-
-# 환경 변수에서 API 키를 로드합니다.
-load_dotenv()
-api_key = os.getenv('API_KEY')
-
-def fetch_new_bids():
-    api_url = "https://api.example.com/get_new_bids"
-    headers = {"Authorization": f"Bearer {api_key}"}
-    response = requests.get(api_url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise Exception("API 요청 실패")
-
-def fetch_new_prebids():
-    api_url = "https://api.example.com/get_new_prebids"
-    headers = {"Authorization": f"Bearer {api_key}"}
-    response = requests.get(api_url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise Exception("API 요청 실패")
-
-def fetch_new_bidwins():
-    api_url = "https://api.example.com/get_new_bidwins"
-    headers = {"Authorization": f"Bearer {api_key}"}
-    response = requests.get(api_url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise Exception("API 요청 실패")
-
-def update_csv(file_path, new_data):
-    try:
-        existing_data = pd.read_csv(file_path)
-    except FileNotFoundError:
-        existing_data = pd.DataFrame()
-
-    new_df = pd.DataFrame(new_data)
-    updated_data = pd.concat([existing_data, new_df], ignore_index=True)
-    updated_data.to_csv(file_path, index=False, encoding='utf-8-sig')
-    print(f"{file_path} 파일이 성공적으로 업데이트되었습니다.")
-
 def get_bid_updates(specific_date, new_only=False):
     df_bids = pd.read_csv("filtered_bids_data.csv")
     df_bids['bidNtceDt'] = pd.to_datetime(df_bids['bidNtceDt'], errors='coerce').dt.date
@@ -145,29 +99,5 @@ def save_updated_dataframes():
     df_bids.to_csv("filtered_bids_data.csv", index=False, encoding='utf-8-sig')
     df_prebids.to_csv("filtered_prebids_data.csv", index=False, encoding='utf-8-sig')
     df_bidwin.to_csv("filtered_bidwin_data.csv", index=False, encoding='utf-8-sig')
-
-def update_all_data():
-    try:
-        bids = fetch_new_bids()
-        update_csv("filtered_bids_data.csv", bids)
-    except Exception as e:
-        print(f"Failed to update bids: {e}")
-
-    try:
-        prebids = fetch_new_prebids()
-        update_csv("filtered_prebids_data.csv", prebids)
-    except Exception as e:
-        print(f"Failed to update prebids: {e}")
-
-    try:
-        bidwins = fetch_new_bidwins()
-        update_csv("filtered_bidwin_data.csv", bidwins)
-    except Exception as e:
-        print(f"Failed to update bidwins: {e}")
-
-# main.py에서 호출할 수 있도록 설정
-if __name__ == "__main__":
-    update_all_data()
-    save_updated_dataframes()
 
 # python get_update_bids.py

@@ -16,89 +16,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadAndDisplayData(date) {
         console.log('Loading data for date:', date);
-
-        fetch('/pybids/data.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('data.json loaded:', data);
-
-                // 날짜 필드를 올바르게 확인하고 필터링합니다.
-                const bids = data.bids.filter(item => item['bidNtceDt'] && item['bidNtceDt'].split(' ')[0] === date);
-                const prebids = data.prebids.filter(item => item['rcptDt'] && item['rcptDt'].split(' ')[0] === date);
-                const bidwins = data.bidwins.filter(item => item['opengDt'] && item['opengDt'].split(' ')[0] === date);
-
-                console.log('Filtered bid data:', bids);
-                console.log('Filtered prebid data:', prebids);
+        
+        fetch('filtered_bidwin_data.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                console.log('filtered_bidwin_data.csv loaded:', csvText);
+                const data = parseCSV(csvText);
+                console.log('Parsed bidwin data:', data);
+                const bidwins = data.filter(item => item['opengDt'].split(' ')[0] === date);
                 console.log('Filtered bidwin data:', bidwins);
-
-                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', 'link');
-                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', 'link');
-                displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'link');
+                displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'opengCorpInfo', 'link');
             })
-            .catch(error => console.error('Error loading data.json:', error));
+            .catch(error => console.error('Error loading bidwin data:', error));
+
+        fetch('filtered_bids_data.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                console.log('filtered_bids_data.csv loaded:', csvText);
+                const data = parseCSV(csvText);
+                console.log('Parsed bid data:', data);
+                const bids = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
+                console.log('Filtered bid data:', bids);
+                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', null, 'link');
+            })
+            .catch(error => console.error('Error loading bid data:', error));
+
+        fetch('filtered_prebids_data.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                console.log('filtered_prebids_data.csv loaded:', csvText);
+                const data = parseCSV(csvText);
+                console.log('Parsed prebid data:', data);
+                const prebids = data.filter(item => item['rcptDt'].split(' ')[0] === date);
+                console.log('Filtered prebid data:', prebids);
+                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', null, 'link');
+            })
+            .catch(error => console.error('Error loading prebid data:', error));
     }
 
-    function displayData(items, container, key, dateKey, linkKey = null) {
+    function parseCSV(csvText) {
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',');
+        const items = lines.slice(1).filter(line => line.trim() !== '').map(line => {
+            const values = line.split(',');
+            let item = {};
+            headers.forEach((header, index) => {
+                item[header.trim()] = values[index] ? values[index].trim() : '';
+            });
+            return item;
+        });
+        console.log('Parsed CSV:', items);
+        return items;
+    }
+
+    function displayData(items, container, key, dateKey, extraKey = null, linkKey = null) {
         container.innerHTML = '';
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
-            task.style.display = 'flex';
+            task.style.display = 'flex'; // 플렉스박스 설정
 
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.style.marginRight = '10px';
-            checkbox.style.accentColor = 'yellow';
-
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) {
-                    // sendOK 값을 업데이트하는 요청을 디스코드 웹훅으로 보냅니다.
-                    const updateData = { ...item, sendOK: 1 };
-                    fetch('DISCORD_WEBHOOK_URL', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ content: JSON.stringify(updateData) })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok ' + response.statusText);
-                        }
-                        return response.json();
-                    })
-                    .then(result => {
-                        if (result.status === 'success') {
-                            task.remove();
-                        } else {
-                            alert('Failed to update item');
-                            checkbox.checked = false;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error updating item:', error);
-                        alert('Failed to update item');
-                        checkbox.checked = false;
-                    });
-                }
-            });
+            checkbox.style.accentColor = 'yellow'; // 노란색으로 체크박스 색상 변경
 
             const text = document.createElement('span');
             text.style.flex = '1';
-            text.style.cursor = 'pointer';
+            text.style.cursor = 'pointer'; // 마우스 커서 변경
             text.onclick = () => {
                 if (item[linkKey]) {
-                    window.open(item[linkKey], '_blank');
+                    window.open(item[linkKey], '_blank'); // 새 창에서 링크 열기
                 }
             };
 
             const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
-            text.innerHTML = `${date} ${item[key]}`;
+            let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
+            text.innerHTML = `${date} ${item[key]}${extraInfo}`;
 
             task.appendChild(checkbox);
             task.appendChild(text);
