@@ -1,8 +1,7 @@
 # main.py
 
-from flask import Flask
+from flask import Flask, request, jsonify
 from threading import Thread
-import asyncio
 import os
 import pandas as pd
 from dotenv import load_dotenv
@@ -12,6 +11,9 @@ import datetime
 import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 import tracemalloc
+import csv
+
+os.environ['PYTHONIOENCODING'] = 'UTF-8'
 
 # 가상 환경 활성화 경로
 venv_path = os.path.join(os.path.dirname(__file__), '.venv')
@@ -26,6 +28,31 @@ app = Flask('')
 def home():
     return "I'm alive"
 
+@app.route('/delete', methods=['POST'])
+def delete_item():
+    item_to_delete = request.json
+    print(f"Received delete request for item: {item_to_delete}")
+    if 'opengDt' in item_to_delete:
+        remove_item_from_csv(bidwin_file, item_to_delete)
+    elif 'bidNtceDt' in item_to_delete:
+        remove_item_from_csv(bids_file, item_to_delete)
+    elif 'rcptDt' in item_to_delete:
+        remove_item_from_csv(prebids_file, item_to_delete)
+    return jsonify({'status': 'success'})
+
+def remove_item_from_csv(file_path, item_to_delete):
+    rows = []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row != item_to_delete:
+                rows.append(row)
+
+    with open(file_path, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+
 def run():
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)))
 
@@ -34,8 +61,6 @@ def keep_alive():
     server.start()
 
 keep_alive()
-
-# tracemalloc.start()# Discord 설정
 
 # Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
@@ -59,7 +84,7 @@ async def on_ready():
     if not update_data_task.is_running():
         update_data_task.start()
 
-# 나머지 코드...
+# 나머지 Discord 관련 코드...
 
 
 @bot.command(name='ping')
@@ -323,7 +348,7 @@ async def send_daily_updates():
         await channel.send("오늘의 새로운 사전 공고가 없습니다.")
 
 
-bot.run(TOKEN)
+# bot.run(TOKEN)
 
 # main.py에 추가
 from flask import Flask, jsonify
@@ -376,7 +401,8 @@ def delete_item():
     return jsonify({'status': 'success'})
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=int(os.getenv('PORT', 8080)))
+    bot.run(TOKEN)
+    # app.run(host='127.0.0.1', port=int(os.getenv('PORT', 8080)))
 
 # .\\.venv\\Scripts\\activate
 # python main.py
