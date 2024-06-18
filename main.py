@@ -12,7 +12,6 @@ import datetime
 import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 import tracemalloc
-os.environ['PYTHONIOENCODING'] = 'UTF-8'
 
 # 가상 환경 활성화 경로
 venv_path = os.path.join(os.path.dirname(__file__), '.venv')
@@ -28,13 +27,14 @@ def home():
     return "I'm alive"
 
 def run():
-    app.run(host='127.0.0.1', port=int(os.getenv('PORT', 8080)))
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)))
 
 def keep_alive():
     server = Thread(target=run)
     server.start()
 
-keep_alive()# main.py에 추가
+keep_alive()
+
 # tracemalloc.start()# Discord 설정
 
 # Discord 설정
@@ -58,6 +58,8 @@ async def on_ready():
     
     if not update_data_task.is_running():
         update_data_task.start()
+
+# 나머지 코드...
 
 
 @bot.command(name='ping')
