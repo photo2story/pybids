@@ -55,7 +55,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
             checkbox.addEventListener('change', () => {
                 if (checkbox.checked) {
-                    task.remove();
+                    // 서버로 삭제 요청을 보냅니다.
+                    fetch('/delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(item)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.status === 'success') {
+                            task.remove();
+                        } else {
+                            alert('Failed to delete item');
+                            checkbox.checked = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting item:', error);
+                        alert('Failed to delete item');
+                        checkbox.checked = false;
+                    });
                 }
             });
 
@@ -78,4 +99,3 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Displayed data:', items);
     }
 });
-
