@@ -1,3 +1,5 @@
+/* # styles.css */
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -54,4 +56,3 @@ input[type="checkbox"] {
         font-size: 14px; /* 작은 화면에서는 글씨 크기를 약간 줄임 */
     }
 }
-

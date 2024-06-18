@@ -97,8 +97,3 @@ def update_bids_data():
     }
     columns = ['bidNtceNo', 'ntceInsttNm', 'bidNtceNm', 'presmptPrce', 'bidNtceDt']
     update_data("filtered_bids_data.csv", url, params, columns, 'bidNtceDt')
-
-
-
-
-
