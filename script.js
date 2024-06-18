@@ -1,3 +1,5 @@
+// Script.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('date');
     const bidwinSection = document.getElementById('bidwin-section');
