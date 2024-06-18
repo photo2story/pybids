@@ -74,19 +74,36 @@ document.addEventListener('DOMContentLoaded', () => {
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
-            task.style.display = 'flex'; // 플렉스박스 설정
+            task.style.display = 'flex';
 
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.style.marginRight = '10px';
-            checkbox.style.accentColor = 'yellow'; // 노란색으로 체크박스 색상 변경
+            checkbox.style.accentColor = 'yellow';
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    task.remove();
+                    fetch('/delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(item)
+                    }).then(response => {
+                        if (!response.ok) {
+                            console.error('Failed to delete item');
+                        }
+                    }).catch(error => console.error('Error:', error));
+                }
+            });
 
             const text = document.createElement('span');
             text.style.flex = '1';
-            text.style.cursor = 'pointer'; // 마우스 커서 변경
+            text.style.cursor = 'pointer';
             text.onclick = () => {
                 if (item[linkKey]) {
-                    window.open(item[linkKey], '_blank'); // 새 창에서 링크 열기
+                    window.open(item[linkKey], '_blank');
                 }
             };
 
@@ -101,17 +118,3 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Displayed data:', items);
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-

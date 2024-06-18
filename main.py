@@ -344,6 +344,34 @@ def get_data():
     )
     return response
 
+bidwin_file = 'filtered_bidwin_data.csv'
+bids_file = 'filtered_bids_data.csv'
+prebids_file = 'filtered_prebids_data.csv'
+
+def remove_item_from_csv(file_path, item_to_delete):
+    rows = []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row != item_to_delete:
+                rows.append(row)
+
+    with open(file_path, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+
+@app.route('/delete', methods=['POST'])
+def delete_item():
+    item_to_delete = request.json
+    if 'opengDt' in item_to_delete:
+        remove_item_from_csv(bidwin_file, item_to_delete)
+    elif 'bidNtceDt' in item_to_delete:
+        remove_item_from_csv(bids_file, item_to_delete)
+    elif 'rcptDt' in item_to_delete:
+        remove_item_from_csv(prebids_file, item_to_delete)
+    return jsonify({'status': 'success'})
+
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=int(os.getenv('PORT', 8080)))
 
