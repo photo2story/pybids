@@ -12,6 +12,7 @@ import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 import tracemalloc
 import csv
+import concurrent.futures
 
 os.environ['PYTHONIOENCODING'] = 'UTF-8'
 
@@ -84,9 +85,6 @@ async def on_ready():
     if not update_data_task.is_running():
         update_data_task.start()
 
-# 나머지 Discord 관련 코드...
-
-
 @bot.command(name='ping')
 async def ping(ctx):
     await ctx.send('pong')
@@ -118,7 +116,7 @@ async def prebid(ctx, *, query: str):
                     f"{row['prdctClsfcNoNm']}\n"
                     f"{asignBdgtAmt}\n"
                     f"{row['rcptDt']}\n"
-                    f"링크: http://www.g2b.go.kr:8081/ep/invitation/publish/bidInfoDtl.do?bidno={row['bidNtceNo']}\n"
+                    f"링크: https://www.g2b.go.kr:8082/ep/preparation/prestd/preStdDtl.do?preStdRegNo={row['bfSpecRgstNo']}\n"
                 )
                 messages.append(msg)
 
@@ -253,8 +251,6 @@ async def show_updates(channel, specific_date):
         await channel.send("오늘의 새로운 낙찰 정보가 없습니다.")
     
     save_updated_dataframes()
-    
-import concurrent.futures
 
 # Define the update task
 @tasks.loop(hours=24)  # Update data every 24 hours
@@ -279,9 +275,6 @@ async def update_data_task():
         await show_updates(channel, today)
         await show_updates(channel, yesterday)
 
-
-
-
 # Function to run a script within the virtual environment
 def fetch_data_and_update(script_name):
     venv_activate = os.path.join('D:\\OneDrive\\Work\\Source\\Repos\\pybids\\.venv\\Scripts\\Activate.ps1')
@@ -292,7 +285,6 @@ def fetch_data_and_update(script_name):
         print(f"Error message: {result.stderr}")
     else:
         print(f"Script {script_name} finished successfully.")
-
 
 async def send_daily_updates():
     channel = bot.get_channel(int(CHANNEL_ID))
@@ -347,61 +339,9 @@ async def send_daily_updates():
     else:
         await channel.send("오늘의 새로운 사전 공고가 없습니다.")
 
-
-# bot.run(TOKEN)
-
-# main.py에 추가
-from flask import Flask, jsonify
-import json
-
-app = Flask(__name__)
-
-@app.route('/api/test', methods=['GET'])
-def test():
-    return jsonify({"message": "Hello, World!"})
-
-@app.route('/data.json', methods=['GET'])
-def get_data():
-    with open('data.json', 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    response = app.response_class(
-        response=json.dumps(data, ensure_ascii=False),
-        mimetype='application/json',
-        content_type='application/json; charset=utf-8'
-    )
-    return response
-
-bidwin_file = 'filtered_bidwin_data.csv'
-bids_file = 'filtered_bids_data.csv'
-prebids_file = 'filtered_prebids_data.csv'
-
-def remove_item_from_csv(file_path, item_to_delete):
-    rows = []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row != item_to_delete:
-                rows.append(row)
-
-    with open(file_path, 'w', encoding='utf-8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
-        writer.writeheader()
-        writer.writerows(rows)
-
-@app.route('/delete', methods=['POST'])
-def delete_item():
-    item_to_delete = request.json
-    print(f"Received delete request for item: {item_to_delete}")
-    if 'opengDt' in item_to_delete:
-        remove_item_from_csv(bidwin_file, item_to_delete)
-    elif 'bidNtceDt' in item_to_delete:
-        remove_item_from_csv(bids_file, item_to_delete)
-    elif 'rcptDt' in item_to_delete:
-        remove_item_from_csv(prebids_file, item_to_delete)
-    return jsonify({'status': 'success'})
-
 if __name__ == "__main__":
     bot.run(TOKEN)
+
     # app.run(host='127.0.0.1', port=int(os.getenv('PORT', 8080)))
 
 # .\\.venv\\Scripts\\activate
