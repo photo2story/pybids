@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadAndDisplayData(date) {
         console.log('Loading data for date:', date);
-        
+
         fetch('filtered_bidwin_data.csv')
             .then(response => response.text())
             .then(csvText => {
@@ -76,19 +76,49 @@ document.addEventListener('DOMContentLoaded', () => {
         items.forEach(item => {
             const task = document.createElement('div');
             task.className = 'task';
-            task.style.display = 'flex'; // 플렉스박스 설정
+            task.style.display = 'flex';
 
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.style.marginRight = '10px';
-            checkbox.style.accentColor = 'yellow'; // 노란색으로 체크박스 색상 변경
+            checkbox.style.accentColor = 'yellow';
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    // sendOK를 4로 설정하는 요청을 보냅니다.
+                    fetch('/update_sendOK', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            bidNtceNo: item['bidNtceNo'],
+                            filePath: getFilePath(container)
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.status === 'success') {
+                            task.remove();
+                        } else {
+                            alert('Failed to update item');
+                            checkbox.checked = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating item:', error);
+                        alert('Failed to update item');
+                        checkbox.checked = false;
+                    });
+                }
+            });
 
             const text = document.createElement('span');
             text.style.flex = '1';
-            text.style.cursor = 'pointer'; // 마우스 커서 변경
+            text.style.cursor = 'pointer';
             text.onclick = () => {
                 if (item[linkKey]) {
-                    window.open(item[linkKey], '_blank'); // 새 창에서 링크 열기
+                    window.open(item[linkKey], '_blank');
                 }
             };
 
@@ -101,5 +131,16 @@ document.addEventListener('DOMContentLoaded', () => {
             container.appendChild(task);
         });
         console.log('Displayed data:', items);
+    }
+
+    function getFilePath(container) {
+        if (container.id === 'bids-section') {
+            return 'filtered_bids_data.csv';
+        } else if (container.id === 'prebids-section') {
+            return 'filtered_prebids_data.csv';
+        } else if (container.id === 'bidwin-section') {
+            return 'filtered_bidwin_data.csv';
+        }
+        return '';
     }
 });
