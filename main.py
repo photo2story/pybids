@@ -332,18 +332,22 @@ DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
 @app.route('/update_sendOK', methods=['POST'])
 def update_sendOK():
     data = request.json
-    bidNtceNo = data.get('bidNtceNo')
-    filePath = data.get('filePath')
+    bid_no = data.get('bidNtceNo')
+    file_path_key = data.get('filePathKey')
 
-    if not bidNtceNo or not filePath:
+    file_path = FILE_PATHS.get(file_path_key)
+    if not bid_no or not file_path:
         return jsonify({'status': 'error', 'message': 'Missing bid number or file path'}), 400
 
-    try:
-        subprocess.run(['python', 'update_sendOK.py', bidNtceNo, filePath], check=True)
-        return jsonify({'status': 'success'}), 200
-    except subprocess.CalledProcessError as e:
-        print(e)
-        return jsonify({'status': 'error', 'message': 'Failed to update CSV and push changes'}), 500
+    df = pd.read_csv(file_path)
+    if 'sendOK' not in df.columns:
+        df['sendOK'] = 0
+    df.loc[df['bidNtceNo'] == bid_no, 'sendOK'] = 4
+    df.to_csv(file_path, index=False, encoding='utf-8-sig')
+
+    commit_to_github(file_path)
+
+    return jsonify({'status': 'success'})
 
 
 @app.route('/data.json', methods=['GET'])
