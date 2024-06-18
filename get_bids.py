@@ -21,7 +21,7 @@ load_dotenv()
 api_key = os.getenv('BID_API_KEY')
 
 # 키워드 리스트
-keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량", "제안", "공모"]
+keywords = ["설계", "계획", "타당성", "환경", "안전점검", "건설사업", "평가", "안전진단", "측량"]
 
 # 데이터 가져오기
 def fetch_data_with_curl(page_no, start_date, end_date):

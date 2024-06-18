@@ -91,7 +91,7 @@ if __name__ == "__main__":
             merged_df.to_csv('filtered_prebids_data.csv', index=False, encoding='utf-8-sig')
 
         # 필터링된 데이터
-        keywords = ["기본", "설계", "계획", "조사", "타당성", "환경", "안전", "건설사업", "평가", "점검", "측량", "제안", "공모"]
+        keywords = ["설계", "계획", "타당성", "환경", "안전점검", "건설사업", "평가", "안전진단", "측량"]
         keyword_pattern = '|'.join(keywords)
         filtered_df = df_new[df_new['prdctClsfcNoNm'].str.contains(keyword_pattern, na=False)]
         if not filtered_df.empty:
