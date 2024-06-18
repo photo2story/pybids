@@ -26,17 +26,19 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(data => {
                 console.log('data.json loaded:', data);
+
+                // 날짜 필드를 올바르게 확인하고 필터링합니다.
                 const bids = data.bids.filter(item => item['bidNtceDt'] && item['bidNtceDt'].split(' ')[0] === date);
-                const prebids = data.prebids.filter(item => item['bidNtceDt'] && item['bidNtceDt'].split(' ')[0] === date);
-                const bidwins = data.bidwins.filter(item => item['bidNtceDt'] && item['bidNtceDt'].split(' ')[0] === date);
+                const prebids = data.prebids.filter(item => item['rcptDt'] && item['rcptDt'].split(' ')[0] === date);
+                const bidwins = data.bidwins.filter(item => item['opengDt'] && item['opengDt'].split(' ')[0] === date);
 
                 console.log('Filtered bid data:', bids);
                 console.log('Filtered prebid data:', prebids);
                 console.log('Filtered bidwin data:', bidwins);
 
                 displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', 'link');
-                displayData(prebids, prebidsSection, 'bidNtceNm', 'bidNtceDt', 'link');
-                displayData(bidwins, bidwinSection, 'bidNtceNm', 'bidNtceDt', 'link');
+                displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', 'link');
+                displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'link');
             })
             .catch(error => console.error('Error loading data.json:', error));
     }
@@ -105,4 +107,3 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Displayed data:', items);
     }
 });
-
