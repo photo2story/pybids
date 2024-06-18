@@ -353,6 +353,7 @@ def update_sendOK():
     else:
         return jsonify({'status': 'error', 'message': 'Failed to send Discord webhook'}), 500
 
+
 @app.route('/data.json', methods=['GET'])
 def get_data():
     with open('data.json', 'r', encoding='utf-8') as f:
