@@ -1,4 +1,4 @@
-# main.py
+# app.py
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # 추가
@@ -347,4 +347,4 @@ if __name__ == "__main__":
     # app.run(host='127.0.0.1', port=int(os.getenv('PORT', 8080)))
 
 # .\\.venv\\Scripts\\activate
-# python main.py
+# python app.py
