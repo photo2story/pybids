@@ -55,26 +55,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             checkbox.addEventListener('change', () => {
                 if (checkbox.checked) {
-                    // 서버로 삭제 요청을 보냅니다.
-                    fetch('/delete', {
+                    // sendOK 값을 업데이트하는 요청을 디스코드 웹훅으로 보냅니다.
+                    const updateData = { ...item, sendOK: 1 };
+                    fetch('DISCORD_WEBHOOK_URL', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(item)
+                        body: JSON.stringify({ content: JSON.stringify(updateData) })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok ' + response.statusText);
+                        }
+                        return response.json();
+                    })
                     .then(result => {
                         if (result.status === 'success') {
                             task.remove();
                         } else {
-                            alert('Failed to delete item');
+                            alert('Failed to update item');
                             checkbox.checked = false;
                         }
                     })
                     .catch(error => {
-                        console.error('Error deleting item:', error);
-                        alert('Failed to delete item');
+                        console.error('Error updating item:', error);
+                        alert('Failed to update item');
                         checkbox.checked = false;
                     });
                 }
@@ -99,3 +105,4 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Displayed data:', items);
     }
 });
+
