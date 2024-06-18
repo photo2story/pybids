@@ -1,5 +1,5 @@
 # main.py
-os.environ['PYTHONIOENCODING'] = 'UTF-8'
+
 from flask import Flask
 from threading import Thread
 import asyncio
@@ -12,6 +12,8 @@ import datetime
 import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 import tracemalloc
+os.environ['PYTHONIOENCODING'] = 'UTF-8'
+
 # 가상 환경 활성화 경로
 venv_path = os.path.join(os.path.dirname(__file__), '.venv')
 site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
