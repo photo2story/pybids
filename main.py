@@ -1,6 +1,7 @@
 # main.py
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # 추가
 from threading import Thread
 import os
 import pandas as pd
@@ -23,8 +24,8 @@ site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
 
 # 환경 변수에서 API 키를 로드
 load_dotenv()
-
-app = Flask('')
+app = Flask(__name__)
+CORS(app)  # CORS 설정 추가
 
 @app.route('/')
 def home():
