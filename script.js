@@ -86,29 +86,27 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.addEventListener('change', () => {
                 if (checkbox.checked) {
                     // sendOK를 4로 설정하는 요청을 보냅니다.
-                    fetch('/update_sendOK', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
+                    $.ajax({
+                        url: '/update_sendOK',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
                             bidNtceNo: item['bidNtceNo'],
                             filePath: getFilePath(container)
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.status === 'success') {
-                            task.remove();
-                        } else {
+                        }),
+                        success: function(result) {
+                            if (result.status === 'success') {
+                                task.remove();
+                            } else {
+                                alert('Failed to update item');
+                                checkbox.checked = false;
+                            }
+                        },
+                        error: function(error) {
+                            console.error('Error updating item:', error);
                             alert('Failed to update item');
                             checkbox.checked = false;
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error updating item:', error);
-                        alert('Failed to update item');
-                        checkbox.checked = false;
                     });
                 }
             });
@@ -144,3 +142,4 @@ document.addEventListener('DOMContentLoaded', () => {
         return '';
     }
 });
+
