@@ -348,4 +348,3 @@ if __name__ == "__main__":
 
 # .\\.venv\\Scripts\\activate
 # python main.py
-# .\\venv\\Scripts\\activate
