@@ -78,29 +78,27 @@ $(document).ready(() => {
 
             checkbox.on('change', () => {
                 if (checkbox.prop('checked')) {
-                    fetch('/update_sendOK', {
+                    // sendOK를 4로 설정하는 요청을 보냅니다.
+                    $.ajax({
+                        url: 'http://localhost:8080/update_sendOK',  // 로컬 서버에서 POST 요청을 처리
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
+                        contentType: 'application/json',
+                        data: JSON.stringify({
                             bidNtceNo: item['bidNtceNo'],
                             filePathKey: getFilePathKey(container)
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.status === 'success') {
-                            task.remove();
-                        } else {
+                        }),
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                task.remove();
+                            } else {
+                                alert('Failed to update item');
+                                checkbox.prop('checked', false);
+                            }
+                        },
+                        error: function() {
                             alert('Failed to update item');
                             checkbox.prop('checked', false);
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error updating item:', error);
-                        alert('Failed to update item');
-                        checkbox.prop('checked', false);
                     });
                 }
             });
@@ -133,6 +131,3 @@ $(document).ready(() => {
         return '';
     }
 });
-
-
-

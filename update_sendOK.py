@@ -17,13 +17,17 @@ BIDWIN_FILE_PATH = os.path.join(REPO_PATH, 'filtered_bidwin_data.csv')
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 GITHUB_REPO_URL = f'https://{GITHUB_TOKEN}@github.com/photo2story/pybids.git'
 
-def update_sendOK(bidNtceNo, filePath):
-    df = pd.read_csv(filePath)
+load_dotenv()
+
+def update_sendOK(file_path, bid_no):
+    df = pd.read_csv(file_path)
     if 'sendOK' not in df.columns:
         df['sendOK'] = 0
-    df.loc[df['bidNtceNo'] == bidNtceNo, 'sendOK'] = 4
-    df.to_csv(filePath, index=False, encoding='utf-8-sig')
-    print(f"Updated sendOK to 4 for bid number {bidNtceNo} in {filePath}")
+    df.loc[df['bidNtceNo'] == bid_no, 'sendOK'] = 4
+    df.to_csv(file_path, index=False, encoding='utf-8-sig')
+
+# update_sendOK('filtered_bids_data.csv', 'your_bid_number')
+# update_sendOK('filtered_prebids_data.csv', 'your_bid_number')
 
 def git_commit_and_push(repo_path, file_path, message):
     repo = git.Repo(repo_path)
