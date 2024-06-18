@@ -16,57 +16,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadAndDisplayData(date) {
         console.log('Loading data for date:', date);
-        
-        fetch('filtered_bidwin_data.csv')
-            .then(response => response.text())
-            .then(csvText => {
-                console.log('filtered_bidwin_data.csv loaded:', csvText);
-                const data = parseCSV(csvText);
-                console.log('Parsed bidwin data:', data);
+
+        fetch('filtered_bidwin_data.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log('filtered_bidwin_data.json loaded:', data);
                 const bidwins = data.filter(item => item['opengDt'].split(' ')[0] === date);
                 console.log('Filtered bidwin data:', bidwins);
                 displayData(bidwins, bidwinSection, 'bidNtceNm', 'opengDt', 'opengCorpInfo', 'link');
             })
             .catch(error => console.error('Error loading bidwin data:', error));
 
-        fetch('filtered_bids_data.csv')
-            .then(response => response.text())
-            .then(csvText => {
-                console.log('filtered_bids_data.csv loaded:', csvText);
-                const data = parseCSV(csvText);
-                console.log('Parsed bid data:', data);
+        fetch('filtered_bids_data.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log('filtered_bids_data.json loaded:', data);
                 const bids = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
                 console.log('Filtered bid data:', bids);
                 displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', null, 'link');
             })
             .catch(error => console.error('Error loading bid data:', error));
 
-        fetch('filtered_prebids_data.csv')
-            .then(response => response.text())
-            .then(csvText => {
-                console.log('filtered_prebids_data.csv loaded:', csvText);
-                const data = parseCSV(csvText);
-                console.log('Parsed prebid data:', data);
+        fetch('filtered_prebids_data.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log('filtered_prebids_data.json loaded:', data);
                 const prebids = data.filter(item => item['rcptDt'].split(' ')[0] === date);
                 console.log('Filtered prebid data:', prebids);
                 displayData(prebids, prebidsSection, 'prdctClsfcNoNm', 'rcptDt', null, 'link');
             })
             .catch(error => console.error('Error loading prebid data:', error));
-    }
-
-    function parseCSV(csvText) {
-        const lines = csvText.split('\n');
-        const headers = lines[0].split(',');
-        const items = lines.slice(1).filter(line => line.trim() !== '').map(line => {
-            const values = line.split(',');
-            let item = {};
-            headers.forEach((header, index) => {
-                item[header.trim()] = values[index] ? values[index].trim() : '';
-            });
-            return item;
-        });
-        console.log('Parsed CSV:', items);
-        return items;
     }
 
     function displayData(items, container, key, dateKey, extraKey = null, linkKey = null) {
@@ -84,19 +63,18 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.addEventListener('change', () => {
                 if (checkbox.checked) {
                     task.remove();
-                    fetch('/delete', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(item)
-                    }).then(response => {
-                        if (response.ok) {
-                            console.log(`Successfully deleted item: ${JSON.stringify(item)}`);
-                        } else {
-                            console.error('Failed to delete item');
-                        }
-                    }).catch(error => console.error('Error:', error));
+                    // GitHub Pages에서는 서버에 POST 요청을 할 수 없으므로, 로컬 스토리지 등을 활용해야 합니다.
+                    // fetch('/delete', {
+                    //     method: 'POST',
+                    //     headers: {
+                    //         'Content-Type': 'application/json'
+                    //     },
+                    //     body: JSON.stringify(item)
+                    // }).then(response => {
+                    //     if (!response.ok) {
+                    //         console.error('Failed to delete item');
+                    //     }
+                    // }).catch(error => console.error('Error:', error));
                 }
             });
 
