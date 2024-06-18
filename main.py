@@ -332,26 +332,18 @@ DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
 @app.route('/update_sendOK', methods=['POST'])
 def update_sendOK():
     data = request.json
-    bid_no = data.get('bidNtceNo')
-    file_path = data.get('filePath')
+    bidNtceNo = data.get('bidNtceNo')
+    filePath = data.get('filePath')
 
-    if not bid_no or not file_path:
+    if not bidNtceNo or not filePath:
         return jsonify({'status': 'error', 'message': 'Missing bid number or file path'}), 400
 
-    df = pd.read_csv(file_path)
-    if 'sendOK' not in df.columns:
-        df['sendOK'] = 0
-    df.loc[df['bidNtceNo'] == bid_no, 'sendOK'] = 4
-    df.to_csv(file_path, index=False, encoding='utf-8-sig')
-
-    # Send a message to Discord webhook
-    message = f"Updated sendOK to 4 for bid number {bid_no} in {file_path}"
-    response = requests.post(DISCORD_WEBHOOK_URL, json={"content": message})
-
-    if response.status_code == 204:
+    try:
+        subprocess.run(['python', 'update_sendOK.py', bidNtceNo, filePath], check=True)
         return jsonify({'status': 'success'}), 200
-    else:
-        return jsonify({'status': 'error', 'message': 'Failed to send Discord webhook'}), 500
+    except subprocess.CalledProcessError as e:
+        print(e)
+        return jsonify({'status': 'error', 'message': 'Failed to update CSV and push changes'}), 500
 
 
 @app.route('/data.json', methods=['GET'])

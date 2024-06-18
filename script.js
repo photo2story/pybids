@@ -1,16 +1,16 @@
-$(function() {
-    const dateInput = $('#date');
-    const bidwinSection = $('#bidwin-section');
-    const bidsSection = $('#bids-section');
-    const prebidsSection = $('#prebids-section');
+document.addEventListener('DOMContentLoaded', () => {
+    const dateInput = document.getElementById('date');
+    const bidwinSection = document.getElementById('bidwin-section');
+    const bidsSection = document.getElementById('bids-section');
+    const prebidsSection = document.getElementById('prebids-section');
 
     const today = new Date().toISOString().split('T')[0];
-    dateInput.val(today);
+    dateInput.value = today;
 
     loadAndDisplayData(today);
 
-    dateInput.on('change', function() {
-        const selectedDate = $(this).val();
+    dateInput.addEventListener('change', () => {
+        const selectedDate = dateInput.value;
         loadAndDisplayData(selectedDate);
     });
 
@@ -70,64 +70,76 @@ $(function() {
     }
 
     function displayData(items, container, key, dateKey, extraKey = null, linkKey = null) {
-        container.empty();
+        container.innerHTML = '';
         items.forEach(item => {
-            const task = $('<div>').addClass('task').css('display', 'flex');
+            const task = document.createElement('div');
+            task.className = 'task';
+            task.style.display = 'flex';
 
-            const checkbox = $('<input>').attr('type', 'checkbox').css('marginRight', '10px').css('accentColor', 'yellow');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.style.marginRight = '10px';
+            checkbox.style.accentColor = 'yellow';
 
-            checkbox.on('change', function() {
-                if (checkbox.prop('checked')) {
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
                     // sendOK를 4로 설정하는 요청을 보냅니다.
-                    $.ajax({
-                        url: '/update_sendOK',
-                        type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({
+                    fetch('/update_sendOK', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
                             bidNtceNo: item['bidNtceNo'],
                             filePath: getFilePath(container)
-                        }),
-                        success: function(result) {
-                            if (result.status === 'success') {
-                                task.remove();
-                            } else {
-                                alert('Failed to update item');
-                                checkbox.prop('checked', false);
-                            }
-                        },
-                        error: function(error) {
-                            console.error('Error updating item:', error);
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.status === 'success') {
+                            task.remove();
+                        } else {
                             alert('Failed to update item');
-                            checkbox.prop('checked', false);
+                            checkbox.checked = false;
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error updating item:', error);
+                        alert('Failed to update item');
+                        checkbox.checked = false;
                     });
                 }
             });
 
-            const text = $('<span>').css('flex', '1').css('cursor', 'pointer').on('click', function() {
+            const text = document.createElement('span');
+            text.style.flex = '1';
+            text.style.cursor = 'pointer';
+            text.onclick = () => {
                 if (item[linkKey]) {
                     window.open(item[linkKey], '_blank');
                 }
-            });
+            };
 
             const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
             let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
-            text.html(`${date} ${item[key]}${extraInfo}`);
+            text.innerHTML = `${date} ${item[key]}${extraInfo}`;
 
-            task.append(checkbox).append(text);
-            container.append(task);
+            task.appendChild(checkbox);
+            task.appendChild(text);
+            container.appendChild(task);
         });
         console.log('Displayed data:', items);
     }
 
     function getFilePath(container) {
-        if (container.is('#bids-section')) {
+        if (container.id === 'bids-section') {
             return 'filtered_bids_data.csv';
-        } else if (container.is('#prebids-section')) {
+        } else if (container.id === 'prebids-section') {
             return 'filtered_prebids_data.csv';
-        } else if (container.is('#bidwin-section')) {
+        } else if (container.id === 'bidwin-section') {
             return 'filtered_bidwin_data.csv';
         }
         return '';
     }
 });
+
