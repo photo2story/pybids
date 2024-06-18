@@ -26,8 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(data => {
                 console.log('data.json loaded:', data);
-                const bidwins = data.filter(item => item['bidNtceDt'].split(' ')[0] === date);
+                const bids = data.bids.filter(item => item['bidNtceDt'].split(' ')[0] === date);
+                const prebids = data.prebids.filter(item => item['bidNtceDt'].split(' ')[0] === date);
+                const bidwins = data.bidwins.filter(item => item['bidNtceDt'].split(' ')[0] === date);
+
+                console.log('Filtered bid data:', bids);
+                console.log('Filtered prebid data:', prebids);
                 console.log('Filtered bidwin data:', bidwins);
+
+                displayData(bids, bidsSection, 'bidNtceNm', 'bidNtceDt', 'link');
+                displayData(prebids, prebidsSection, 'bidNtceNm', 'bidNtceDt', 'link');
                 displayData(bidwins, bidwinSection, 'bidNtceNm', 'bidNtceDt', 'link');
             })
             .catch(error => console.error('Error loading data.json:', error));
