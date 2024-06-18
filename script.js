@@ -83,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             checkbox.addEventListener('change', () => {
                 if (checkbox.checked) {
-                    // sendOK를 4로 설정하는 요청을 보냅니다.
                     fetch('/update_sendOK', {
                         method: 'POST',
                         headers: {
@@ -142,4 +141,5 @@ document.addEventListener('DOMContentLoaded', () => {
         return '';
     }
 });
+
 
