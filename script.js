@@ -26,9 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(data => {
                 console.log('data.json loaded:', data);
-                const bids = data.bids.filter(item => item['bidNtceDt'].split(' ')[0] === date);
-                const prebids = data.prebids.filter(item => item['bidNtceDt'].split(' ')[0] === date);
-                const bidwins = data.bidwins.filter(item => item['bidNtceDt'].split(' ')[0] === date);
+                const bids = data.bids.filter(item => item['bidNtceDt'] && item['bidNtceDt'].split(' ')[0] === date);
+                const prebids = data.prebids.filter(item => item['bidNtceDt'] && item['bidNtceDt'].split(' ')[0] === date);
+                const bidwins = data.bidwins.filter(item => item['bidNtceDt'] && item['bidNtceDt'].split(' ')[0] === date);
 
                 console.log('Filtered bid data:', bids);
                 console.log('Filtered prebid data:', prebids);
