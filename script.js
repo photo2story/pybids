@@ -118,3 +118,4 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Displayed data:', items);
     }
 });
+
