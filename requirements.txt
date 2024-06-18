@@ -4,3 +4,4 @@ python-dotenv
 Flask
 numpy
 os
+requests

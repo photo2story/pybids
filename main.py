@@ -13,6 +13,7 @@ from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_upda
 import tracemalloc
 import csv
 import concurrent.futures
+import requests
 
 os.environ['PYTHONIOENCODING'] = 'UTF-8'
 
