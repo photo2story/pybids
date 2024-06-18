@@ -364,6 +364,7 @@ def remove_item_from_csv(file_path, item_to_delete):
 @app.route('/delete', methods=['POST'])
 def delete_item():
     item_to_delete = request.json
+    print(f"Received delete request for item: {item_to_delete}")
     if 'opengDt' in item_to_delete:
         remove_item_from_csv(bidwin_file, item_to_delete)
     elif 'bidNtceDt' in item_to_delete:

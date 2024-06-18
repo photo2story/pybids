@@ -91,7 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         body: JSON.stringify(item)
                     }).then(response => {
-                        if (!response.ok) {
+                        if (response.ok) {
+                            console.log(`Successfully deleted item: ${JSON.stringify(item)}`);
+                        } else {
                             console.error('Failed to delete item');
                         }
                     }).catch(error => console.error('Error:', error));
@@ -118,4 +120,3 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Displayed data:', items);
     }
 });
-
