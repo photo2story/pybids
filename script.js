@@ -1,5 +1,3 @@
-// Script.js_ jQuery를 이용한 기능 구현
-
 $(function() {
     const dateInput = $('#date');
     const bidwinSection = $('#bidwin-section');
