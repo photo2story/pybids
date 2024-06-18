@@ -1,6 +1,7 @@
 # main.py
 
 from flask import Flask
+from flask_cors import CORS  # CORS 라이브러리 임포트
 from threading import Thread
 import asyncio
 import os
@@ -20,6 +21,7 @@ site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
 load_dotenv()
 
 app = Flask('')
+CORS(app)  # Flask 애플리케이션에 CORS 지원 추가
 
 @app.route('/')
 def home():
@@ -334,8 +336,12 @@ def update_sendOK():
     data = request.json
     bid_no = data.get('bidNtceNo')
     file_path_key = data.get('filePathKey')
+    file_path = {
+        'bids': 'filtered_bids_data.csv',
+        'prebids': 'filtered_prebids_data.csv',
+        'bidwin': 'filtered_bidwin_data.csv'
+    }.get(file_path_key)
 
-    file_path = FILE_PATHS.get(file_path_key)
     if not bid_no or not file_path:
         return jsonify({'status': 'error', 'message': 'Missing bid number or file path'}), 400
 
@@ -345,7 +351,16 @@ def update_sendOK():
     df.loc[df['bidNtceNo'] == bid_no, 'sendOK'] = 4
     df.to_csv(file_path, index=False, encoding='utf-8-sig')
 
-    commit_to_github(file_path)
+    # Send a message to Discord webhook
+    message = f"Updated sendOK to 4 for bid number {bid_no} in {file_path}"
+    response = requests.post(DISCORD_WEBHOOK_URL, json={"content": message})
+
+    if response.status_code == 204:
+        return jsonify({'status': 'success'}), 200
+    else:
+        return jsonify({'status': 'error', 'message': 'Failed to send Discord webhook'}), 500
+
+
 
     return jsonify({'status': 'success'})
 
