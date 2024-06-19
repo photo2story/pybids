@@ -89,6 +89,8 @@ $(document).ready(() => {
                         }),
                         success: function(response) {
                             if (response.status === 'success') {
+                                // 성공적으로 업데이트된 경우, 디스코드 메시지 전송
+                                sendDiscordMessage(item['bidNtceNo']);
                                 task.remove();
                             } else {
                                 alert('Failed to update item');
@@ -118,6 +120,23 @@ $(document).ready(() => {
             container.append(task);
         });
         console.log('Displayed data:', items);
+    }
+
+    function sendDiscordMessage(bidNo) {
+        $.ajax({
+            url: 'http://localhost:8080/send_discord_message',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ bidNtceNo: bidNo }),
+            success: function(response) {
+                if (response.status !== 'success') {
+                    console.error('Failed to send Discord message:', response.message);
+                }
+            },
+            error: function() {
+                console.error('Failed to send Discord message');
+            }
+        });
     }
 
     function getFilePathKey(container) {

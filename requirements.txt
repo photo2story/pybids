@@ -5,3 +5,4 @@ Flask
 numpy
 requests
 flask_cors
+gitpython

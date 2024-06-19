@@ -85,7 +85,7 @@ async def prebid(ctx, *, query: str):
             for index, row in filtered_df.iterrows():
                 asignBdgtAmt = f"{int(row['asignBdgtAmt']):,}원" if pd.notnull(row['asignBdgtAmt']) else "정보 없음"
                 msg = (
-                    f"\n[{index + 1}]\n"
+                    f"\n[P {index + 1}]\n" 
                     f"\n등록번호: {row['bfSpecRgstNo']}\n"
                     f"{row['orderInsttNm']}\n"
                     f"{row['prdctClsfcNoNm']}\n"
@@ -345,24 +345,29 @@ def update_sendOK():
     if not bid_no or not file_path:
         return jsonify({'status': 'error', 'message': 'Missing bid number or file path'}), 400
 
-    df = pd.read_csv(file_path)
-    if 'sendOK' not in df.columns:
-        df['sendOK'] = 0
-    df.loc[df['bidNtceNo'] == bid_no, 'sendOK'] = 4
-    df.to_csv(file_path, index=False, encoding='utf-8-sig')
+    command = f'python update_sendOK.py {bid_no} {file_path}'
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
-    # Send a message to Discord webhook
-    message = f"Updated sendOK to 4 for bid number {bid_no} in {file_path}"
+    if result.returncode == 0:
+        return jsonify({'status': 'success'}), 200
+    else:
+        return jsonify({'status': 'error', 'message': 'Failed to update item'}), 500
+
+@app.route('/send_discord_message', methods=['POST'])
+def send_discord_message():
+    data = request.json
+    bid_no = data.get('bidNtceNo')
+    if not bid_no:
+        return jsonify({'status': 'error', 'message': 'Missing bid number'}), 400
+
+    message = f"등록번호 {bid_no} 이(가) 체크되었습니다."
     response = requests.post(DISCORD_WEBHOOK_URL, json={"content": message})
 
     if response.status_code == 204:
         return jsonify({'status': 'success'}), 200
     else:
-        return jsonify({'status': 'error', 'message': 'Failed to send Discord webhook'}), 500
+        return jsonify({'status': 'error', 'message': 'Failed to send Discord message'}), 500
 
-
-
-    return jsonify({'status': 'success'})
 
 
 @app.route('/data.json', methods=['GET'])
@@ -377,7 +382,7 @@ def get_data():
     return response
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.getenv("PORT", 8080)))
+    app.run(host='localhost', port=int(os.getenv("PORT", 8080)))
 
 
 # .\\.venv\\Scripts\\activate
