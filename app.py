@@ -28,7 +28,8 @@ def home():
     return "I'm alive"
 
 def run():
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)))
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)), use_reloader=False)
+
 
 def keep_alive():
     server = Thread(target=run)
