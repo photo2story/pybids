@@ -1,7 +1,9 @@
 # app.py
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask
+from flask_cors import CORS  # CORS 라이브러리 임포트
 from threading import Thread
+import asyncio
 import os
 import pandas as pd
 from dotenv import load_dotenv
@@ -9,39 +11,33 @@ import discord
 from discord.ext import commands, tasks
 import datetime
 import subprocess
-import json
-from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes  # 필요한 함수 import
+from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
+import tracemalloc
+# 가상 환경 활성화 경로
+venv_path = os.path.join(os.path.dirname(__file__), '.venv')
+site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
 
-# Load environment variables
+# 환경 변수에서 API 키를 로드
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask('')
+CORS(app)  # Flask 애플리케이션에 CORS 지원 추가
 
 @app.route('/')
 def home():
     return "I'm alive"
 
-@app.route('/data.json', methods=['GET'])
-def get_data():
-    with open('data.json', 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    response = app.response_class(
-        response=json.dumps(data, ensure_ascii=False),
-        mimetype='application/json',
-        content_type='application/json; charset=utf-8'
-    )
-    return response
-
 def run():
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)), debug=False)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)))
 
 def keep_alive():
     server = Thread(target=run)
     server.start()
 
-keep_alive()
+keep_alive()# main.py에 추가
+# tracemalloc.start()# Discord 설정
 
-# Discord settings
+# Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
 CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
 
@@ -51,6 +47,7 @@ client = discord.Client(intents=intents)
 
 bot = commands.Bot(command_prefix='', intents=intents)
 
+# 시작하기 전에 데이터를 업데이트
 @bot.event
 async def on_ready():
     print(f'Bot이 성공적으로 로그인했습니다: {bot.user.name}')
@@ -61,6 +58,7 @@ async def on_ready():
     
     if not update_data_task.is_running():
         update_data_task.start()
+
 
 @bot.command(name='ping')
 async def ping(ctx):
@@ -174,7 +172,7 @@ async def show(ctx, *, query: str):
     else:
         specific_date = datetime.datetime.strptime(query, "%Y%m%d").date()
         await show_date(ctx.channel, specific_date)
-        
+
 async def show_date(channel, specific_date):
     bid_updates = get_bid_updates(specific_date)
     prebid_updates = get_prebid_updates(specific_date)
@@ -200,7 +198,7 @@ async def show_date(channel, specific_date):
             await channel.send(message)
     else:
         await channel.send("해당 날짜의 새로운 낙찰 정보가 없습니다.")
-        
+
 async def show_updates(channel, specific_date):
     bid_updates = get_bid_updates(specific_date, new_only=True)
     prebid_updates = get_prebid_updates(specific_date, new_only=True)
@@ -228,7 +226,7 @@ async def show_updates(channel, specific_date):
         await channel.send("오늘의 새로운 낙찰 정보가 없습니다.")
     
     save_updated_dataframes()
-
+    
 import concurrent.futures
 
 # Define the update task
@@ -254,6 +252,9 @@ async def update_data_task():
         await show_updates(channel, today)
         await show_updates(channel, yesterday)
 
+
+
+
 # Function to run a script within the virtual environment
 def fetch_data_and_update(script_name):
     venv_activate = os.path.join('D:\\OneDrive\\Work\\Source\\Repos\\pybids\\.venv\\Scripts\\Activate.ps1')
@@ -264,6 +265,7 @@ def fetch_data_and_update(script_name):
         print(f"Error message: {result.stderr}")
     else:
         print(f"Script {script_name} finished successfully.")
+
 
 async def send_daily_updates():
     channel = bot.get_channel(int(CHANNEL_ID))
@@ -318,7 +320,65 @@ async def send_daily_updates():
     else:
         await channel.send("오늘의 새로운 사전 공고가 없습니다.")
 
+
 bot.run(TOKEN)
-        
+
+# main.py에 추가
+from flask import Flask, jsonify
+import json
+
+app = Flask(__name__)
+
+DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
+
+@app.route('/update_sendOK', methods=['POST'])
+def update_sendOK():
+    data = request.json
+    bid_no = data.get('bidNtceNo')
+    file_path_key = data.get('filePathKey')
+    file_path = {
+        'bids': 'filtered_bids_data.csv',
+        'prebids': 'filtered_prebids_data.csv',
+        'bidwin': 'filtered_bidwin_data.csv'
+    }.get(file_path_key)
+
+    if not bid_no or not file_path:
+        return jsonify({'status': 'error', 'message': 'Missing bid number or file path'}), 400
+
+    df = pd.read_csv(file_path)
+    if 'sendOK' not in df.columns:
+        df['sendOK'] = 0
+    df.loc[df['bidNtceNo'] == bid_no, 'sendOK'] = 4
+    df.to_csv(file_path, index=False, encoding='utf-8-sig')
+
+    # Send a message to Discord webhook
+    message = f"Updated sendOK to 4 for bid number {bid_no} in {file_path}"
+    response = requests.post(DISCORD_WEBHOOK_URL, json={"content": message})
+
+    if response.status_code == 204:
+        return jsonify({'status': 'success'}), 200
+    else:
+        return jsonify({'status': 'error', 'message': 'Failed to send Discord webhook'}), 500
+
+
+
+    return jsonify({'status': 'success'})
+
+
+@app.route('/data.json', methods=['GET'])
+def get_data():
+    with open('data.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    response = app.response_class(
+        response=json.dumps(data, ensure_ascii=False),
+        mimetype='application/json',
+        content_type='application/json; charset=utf-8'
+    )
+    return response
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=int(os.getenv("PORT", 8080)))
+
+
 # .\\.venv\\Scripts\\activate
 # python app.py

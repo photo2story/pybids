@@ -1,16 +1,16 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const dateInput = document.getElementById('date');
-    const bidwinSection = document.getElementById('bidwin-section');
-    const bidsSection = document.getElementById('bids-section');
-    const prebidsSection = document.getElementById('prebids-section');
+$(document).ready(() => {
+    const dateInput = $('#date');
+    const bidwinSection = $('#bidwin-section');
+    const bidsSection = $('#bids-section');
+    const prebidsSection = $('#prebids-section');
 
     const today = new Date().toISOString().split('T')[0];
-    dateInput.value = today;
+    dateInput.val(today);
 
     loadAndDisplayData(today);
 
-    dateInput.addEventListener('change', () => {
-        const selectedDate = dateInput.value;
+    dateInput.on('change', () => {
+        const selectedDate = dateInput.val();
         loadAndDisplayData(selectedDate);
     });
 
@@ -70,74 +70,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayData(items, container, key, dateKey, extraKey = null, linkKey = null) {
-        container.innerHTML = '';
+        container.html('');
         items.forEach(item => {
-            const task = document.createElement('div');
-            task.className = 'task';
-            task.style.display = 'flex';
+            const task = $('<div>').addClass('task').css('display', 'flex');
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.style.marginRight = '10px';
-            checkbox.style.accentColor = 'yellow';
+            const checkbox = $('<input>').attr('type', 'checkbox').css('marginRight', '10px').css('accentColor', 'yellow');
 
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) {
+            checkbox.on('change', () => {
+                if (checkbox.prop('checked')) {
                     // sendOK를 4로 설정하는 요청을 보냅니다.
-                    fetch('/update_sendOK', {
+                    $.ajax({
+                        url: 'http://localhost:8080/update_sendOK',  // 로컬 서버에서 POST 요청을 처리
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
+                        contentType: 'application/json',
+                        data: JSON.stringify({
                             bidNtceNo: item['bidNtceNo'],
-                            filePath: getFilePath(container)
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.status === 'success') {
-                            task.remove();
-                        } else {
+                            filePathKey: getFilePathKey(container)
+                        }),
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                task.remove();
+                            } else {
+                                alert('Failed to update item');
+                                checkbox.prop('checked', false);
+                            }
+                        },
+                        error: function() {
                             alert('Failed to update item');
-                            checkbox.checked = false;
+                            checkbox.prop('checked', false);
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error updating item:', error);
-                        alert('Failed to update item');
-                        checkbox.checked = false;
                     });
                 }
             });
 
-            const text = document.createElement('span');
-            text.style.flex = '1';
-            text.style.cursor = 'pointer';
-            text.onclick = () => {
+            const text = $('<span>').css('flex', '1').css('cursor', 'pointer');
+            text.on('click', () => {
                 if (item[linkKey]) {
                     window.open(item[linkKey], '_blank');
                 }
-            };
+            });
 
             const date = item[dateKey] ? item[dateKey].split(' ')[0] : '';
             let extraInfo = extraKey ? `<br>낙찰자: ${item[extraKey]}` : '';
-            text.innerHTML = `${date} ${item[key]}${extraInfo}`;
+            text.html(`${date} ${item[key]}${extraInfo}`);
 
-            task.appendChild(checkbox);
-            task.appendChild(text);
-            container.appendChild(task);
+            task.append(checkbox).append(text);
+            container.append(task);
         });
         console.log('Displayed data:', items);
     }
 
-    function getFilePath(container) {
-        if (container.id === 'bids-section') {
-            return 'filtered_bids_data.csv';
-        } else if (container.id === 'prebids-section') {
-            return 'filtered_prebids_data.csv';
-        } else if (container.id === 'bidwin-section') {
-            return 'filtered_bidwin_data.csv';
+    function getFilePathKey(container) {
+        if (container.attr('id') === 'bids-section') {
+            return 'bids';
+        } else if (container.attr('id') === 'prebids-section') {
+            return 'prebids';
+        } else if (container.attr('id') === 'bidwin-section') {
+            return 'bidwin';
         }
         return '';
     }
