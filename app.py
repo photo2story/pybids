@@ -51,7 +51,7 @@ keep_alive()# main.py에 추가
 # Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
 CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
-print(TOKEN)  # 이 줄을 추가하여 TOKEN 값을 출력
+# print(TOKEN)  # 이 줄을 추가하여 TOKEN 값을 출력
 intents = discord.Intents.all()
 intents.message_content = True
 client = discord.Client(intents=intents)
