@@ -13,6 +13,17 @@ import datetime
 import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 import tracemalloc
+import certifi
+import requests
+import sys
+
+# 콘솔 출력 인코딩을 UTF-8로 설정
+sys.stdout.reconfigure(encoding='utf-8')
+
+os.environ['SSL_CERT_FILE'] = certifi.where()
+# SSL 인증서 검증 추가
+response = requests.get('https://discord.com/api', verify=certifi.where())
+
 # 가상 환경 활성화 경로
 venv_path = os.path.join(os.path.dirname(__file__), '.venv')
 site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
@@ -40,9 +51,9 @@ keep_alive()# main.py에 추가
 # Discord 설정
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
 CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
-
-intents = discord.Intents.default()
-intents.messages = True
+print(TOKEN)  # 이 줄을 추가하여 TOKEN 값을 출력
+intents = discord.Intents.all()
+intents.message_content = True
 client = discord.Client(intents=intents)
 
 bot = commands.Bot(command_prefix='', intents=intents)
