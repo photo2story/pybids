@@ -6,3 +6,4 @@ numpy
 requests
 flask_cors
 gitpython
+gunicorn
