@@ -1,9 +1,8 @@
 # app.py
 
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_cors import CORS  # CORS 라이브러리 임포트
 from threading import Thread
-import asyncio
 import os
 import pandas as pd
 from dotenv import load_dotenv
@@ -13,6 +12,7 @@ import datetime
 import subprocess
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 import tracemalloc
+
 # 가상 환경 활성화 경로
 venv_path = os.path.join(os.path.dirname(__file__), '.venv')
 site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
@@ -252,9 +252,6 @@ async def update_data_task():
         await show_updates(channel, today)
         await show_updates(channel, yesterday)
 
-
-
-
 # Function to run a script within the virtual environment
 def fetch_data_and_update(script_name):
     venv_activate = os.path.join('D:\\OneDrive\\Work\\Source\\Repos\\pybids\\.venv\\Scripts\\Activate.ps1')
@@ -265,7 +262,6 @@ def fetch_data_and_update(script_name):
         print(f"Error message: {result.stderr}")
     else:
         print(f"Script {script_name} finished successfully.")
-
 
 async def send_daily_updates():
     channel = bot.get_channel(int(CHANNEL_ID))
@@ -320,7 +316,6 @@ async def send_daily_updates():
     else:
         await channel.send("오늘의 새로운 사전 공고가 없습니다.")
 
-
 bot.run(TOKEN)
 
 # main.py에 추가
@@ -369,10 +364,6 @@ def send_discord_message():
     else:
         return jsonify({'status': 'error', 'message': 'Failed to send Discord message'}), 500
 
-
-
-
-
 @app.route('/data.json', methods=['GET'])
 def get_data():
     with open('data.json', 'r', encoding='utf-8') as f:
@@ -386,6 +377,7 @@ def get_data():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.getenv("PORT", 8080)))
+
 
 
 # .\\.venv\\Scripts\\activate
