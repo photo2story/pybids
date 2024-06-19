@@ -85,7 +85,7 @@ $(document).ready(() => {
                     const filePathKey = $(this).data('filePathKey');
                     
                     $.ajax({
-                        url: '/update_sendOK',  // 로컬 서버에서 POST 요청을 처리
+                        url: 'http://localhost:8080/update_sendOK',  // 로컬 서버 URL 사용
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({

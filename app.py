@@ -353,6 +353,7 @@ def update_sendOK():
     else:
         return jsonify({'status': 'error', 'message': 'Failed to update item'}), 500
 
+
 @app.route('/send_discord_message', methods=['POST'])
 def send_discord_message():
     data = request.json
