@@ -345,7 +345,7 @@ def update_sendOK():
     if not bid_no or not file_path:
         return jsonify({'status': 'error', 'message': 'Missing bid number or file path'}), 400
 
-    command = f'python update_sendOK.py {bid_no} {file_path}'
+    command = f'python update_sendOK.py {file_path} {bid_no}'
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
     if result.returncode == 0:
@@ -367,6 +367,7 @@ def send_discord_message():
         return jsonify({'status': 'success'}), 200
     else:
         return jsonify({'status': 'error', 'message': 'Failed to send Discord message'}), 500
+
 
 
 

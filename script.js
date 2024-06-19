@@ -75,23 +75,26 @@ $(document).ready(() => {
             const task = $('<div>').addClass('task').css('display', 'flex');
 
             const checkbox = $('<input>').attr('type', 'checkbox').css('marginRight', '10px').css('accentColor', 'yellow');
+            checkbox.data('bidNo', item['bidNtceNo']);
+            checkbox.data('filePathKey', getFilePathKey(container));
 
-            checkbox.on('change', () => {
+            checkbox.on('change', function () {
                 if (checkbox.prop('checked')) {
                     // sendOK를 4로 설정하는 요청을 보냅니다.
+                    const bidNo = $(this).data('bidNo');
+                    const filePathKey = $(this).data('filePathKey');
+                    
                     $.ajax({
-                        url: 'http://localhost:8080/update_sendOK',  // 로컬 서버에서 POST 요청을 처리
+                        url: '/update_sendOK',  // 로컬 서버에서 POST 요청을 처리
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({
-                            bidNtceNo: item['bidNtceNo'],
-                            filePathKey: getFilePathKey(container)
+                            bidNtceNo: bidNo,
+                            filePathKey: filePathKey
                         }),
                         success: function(response) {
                             if (response.status === 'success') {
-                                // 성공적으로 업데이트된 경우, 디스코드 메시지 전송
-                                sendDiscordMessage(item['bidNtceNo']);
-                                task.remove();
+                                alert(`등록번호 ${bidNo} 이(가) 체크되었습니다.`);
                             } else {
                                 alert('Failed to update item');
                                 checkbox.prop('checked', false);
@@ -120,23 +123,6 @@ $(document).ready(() => {
             container.append(task);
         });
         console.log('Displayed data:', items);
-    }
-
-    function sendDiscordMessage(bidNo) {
-        $.ajax({
-            url: 'http://localhost:8080/send_discord_message',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ bidNtceNo: bidNo }),
-            success: function(response) {
-                if (response.status !== 'success') {
-                    console.error('Failed to send Discord message:', response.message);
-                }
-            },
-            error: function() {
-                console.error('Failed to send Discord message');
-            }
-        });
     }
 
     function getFilePathKey(container) {
