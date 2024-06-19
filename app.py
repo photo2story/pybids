@@ -18,9 +18,9 @@ venv_path = os.path.join(os.path.dirname(__file__), '.venv')
 site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
 
 # 환경 변수에서 API 키를 로드
+app = Flask(__name__)
 load_dotenv()
 
-app = Flask('')
 CORS(app)  # Flask 애플리케이션에 CORS 지원 추가
 
 @app.route('/')
@@ -345,14 +345,14 @@ def update_sendOK():
     if not bid_no or not file_path:
         return jsonify({'status': 'error', 'message': 'Missing bid number or file path'}), 400
 
-    command = f'python update_sendOK.py {file_path} {bid_no}'
+    script_path = os.path.join(os.path.dirname(__file__), "update_sendOK.py")
+    command = f'python {script_path} {file_path} {bid_no}'
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
     if result.returncode == 0:
         return jsonify({'status': 'success'}), 200
     else:
         return jsonify({'status': 'error', 'message': 'Failed to update item'}), 500
-
 
 @app.route('/send_discord_message', methods=['POST'])
 def send_discord_message():
@@ -372,6 +372,7 @@ def send_discord_message():
 
 
 
+
 @app.route('/data.json', methods=['GET'])
 def get_data():
     with open('data.json', 'r', encoding='utf-8') as f:
@@ -384,7 +385,7 @@ def get_data():
     return response
 
 if __name__ == "__main__":
-    app.run(host='localhost', port=int(os.getenv("PORT", 8080)))
+    app.run(host='0.0.0.0', port=int(os.getenv("PORT", 8080)))
 
 
 # .\\.venv\\Scripts\\activate
