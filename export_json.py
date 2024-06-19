@@ -36,7 +36,7 @@ def csv_to_json(bids_csv_file, prebids_csv_file, bidwin_csv_file, json_file_path
         'bidwins': bidwin_data
     }
 
-    with open(json_file_path, 'w', encoding='utf-8') as json_file:
+    with open(json_file_path, 'w' , encoding='cp949') as json_file:
         json.dump(data, json_file, ensure_ascii=False, indent=4)
 
 # 파일 경로 설정

@@ -8,6 +8,8 @@ import concurrent.futures
 from get_update_bids import get_bid_updates, get_prebid_updates, get_bidwin_updates, save_updated_dataframes
 
 # Load environment variables
+venv_path = os.path.join(os.path.dirname(__file__), '.venv', 'Lib', 'site-packages')
+sys.path.append(venv_path)
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_APPLICATION_TOKEN')
