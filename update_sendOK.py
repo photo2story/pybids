@@ -56,4 +56,3 @@ if __name__ == "__main__":
 
 
 # python update_sendOK.py filtered_bids_data.csv 000000000
-
