@@ -41,5 +41,16 @@ jobs:
         DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
         DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+        BID_API_KEY: ${{ secrets.BID_API_KEY }}
       run: |
         python app.py
+
+    - name: Run update_sendOK.py
+      env:
+        DISCORD_APPLICATION_TOKEN: ${{ secrets.DISCORD_APPLICATION_TOKEN }}
+        DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+        BID_API_KEY: ${{ secrets.BID_API_KEY }}
+      run: |
+        python update_sendOK.py
