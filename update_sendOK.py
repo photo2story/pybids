@@ -21,9 +21,9 @@ PREBIDS_FILE_PATH = os.path.join(REPO_PATH, 'filtered_prebids_data.csv')
 BIDWIN_FILE_PATH = os.path.join(REPO_PATH, 'filtered_bidwin_data.csv')
 
 # GitHub 토큰을 환경 변수에서 가져옵니다.
-GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+TOKEN_GITHUB = os.getenv('TOKEN_GITHUB')
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
-GITHUB_REPO_URL = f'https://{GITHUB_TOKEN}@github.com/photo2story/pybids.git'
+GITHUB_REPO_URL = f'https://{TOKEN_GITHUB}@github.com/photo2story/pybids.git'
 
 def update_sendOK(file_path, bid_no):
     df = pd.read_csv(file_path)
