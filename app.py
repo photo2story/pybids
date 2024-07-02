@@ -259,7 +259,7 @@ async def update_data_task():
     channel = bot.get_channel(int(CHANNEL_ID))
     if channel:
         today = datetime.date.today()
-        yesterday = today - datetime.timedelta(days=1)
+        yesterday = today - datetime.timedelta(days=3)
         await show_updates(channel, today)
         await show_updates(channel, yesterday)
 
